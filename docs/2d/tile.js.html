@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width" charset="utf-8">
+    <title>bowserjs</title>
+    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css">
+    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/docs.css">
+    <style>
+      body > .navbar .brand {
+        float:left;
+        text-shadow: rgba(255, 255, 255, 0.0980392) 0px 1px 0px, rgba(255, 255, 255, 0.4) 0px 0px 30px;
+        color: white;
+        margin-left:0px;
+        font-weight:normal;
+      }
+      
+      .bs-docs-sidenav i{
+        width: 8px;
+        height: 8px;
+        padding: 0px;
+        margin: 0px;
+        display: inline-block;
+        margin-right:0.5em;
+      }
+      
+      code[class*="language-"],pre[class*="language-"]{color:black;text-shadow:0 1px white;font-family:Consolas,Monaco,'Andale Mono',monospace;direction:ltr;text-align:left;white-space:pre;word-spacing:normal;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*="language-"]{padding:1em;margin:.5em 0;overflow:auto}:not(pre)>code[class*="language-"],pre[class*="language-"]{background:#f5f2f0}:not(pre)>code[class*="language-"]{padding:.1em;border-radius:.3em}.token.comment,.token.prolog,.token.doctype,.token.cdata{color:slategray}.token.punctuation{color:#999}.namespace{opacity:.7}.token.property,.token.tag,.token.boolean,.token.number{color:#905}.token.selector,.token.attr-name,.token.string{color:#690}.token.operator,.token.entity,.token.url,.language-css .token.string,.style .token.string{color:#a67f59;background:hsla(0,0%,100%,.5)}.token.atrule,.token.attr-value,.token.keyword{color:#07a}.token.regex,.token.important{color:#e90}.token.important{font-weight:bold}.token.entity{cursor:help}
+      div.description {margin: 14px 0; padding-top: 14px; border-bottom:1px solid #eee; }
+      .tags {}
+      .ctx-type {
+        display:inline-block;
+        margin-right:0.5em;
+        //- float:right; margin-top:8px
+      }
+      
+      footer iframe{vertical-align:middle;}
+      
+    </style>
+  </head>
+  <body data-spy="scroll" data-target=".scrollspy">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container"><a class="brand">Doxx</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right sponsored"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <header id="overview" class="jumbotron subhead">
+      <div class="container">
+        <h1>bowserjs</h1>
+        <p class="lead"></p>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+        <div class="span3 bs-docs-sidebar">
+          <ul class="nav nav-list bs-docs-sidenav affix-top">
+            <li class=""><a href="../index.html">Main</a></li>
+            <li class=""><a href="../collider.js.html">collider.js</a></li>
+            <li class=""><a href="../composer.js.html">composer.js</a></li>
+            <li class=""><a href="../entity.js.html">entity.js</a></li>
+            <li class=""><a href="../game.js.html">game.js</a></li>
+            <li class=""><a href="../grid.js.html">grid.js</a></li>
+            <li class=""><a href="../keyboard.js.html">keyboard.js</a></li>
+            <li class=""><a href="../misc.js.html">misc.js</a></li>
+            <li class=""><a href="../monitor.js.html">monitor.js</a></li>
+            <li class=""><a href="../mouse.js.html">mouse.js</a></li>
+            <li class=""><a href="../resolution.js.html">resolution.js</a></li>
+            <li class=""><a href="../sampler.js.html">sampler.js</a></li>
+            <li class=""><a href="../scene.js.html">scene.js</a></li>
+            <li class=""><a href="../sound.js.html">sound.js</a></li>
+            <li class=""><a href="../2d/entity.js.html">2d/entity.js</a></li>
+            <li class=""><a href="../2d/scene.js.html">2d/scene.js</a></li>
+            <li class="active"><a href="../2d/tile.js.html">2d/tile.js</a></li>
+            <li class=""><a href="../3d/entity.js.html">3d/entity.js</a></li>
+            <li class=""><a href="../3d/scene.js.html">3d/scene.js</a></li>
+            <li class=""><a href="../pass/render.js.html">pass/render.js</a></li>
+            <li class=""><a href="../pass/shader.js.html">pass/shader.js</a></li>
+            <li class=""><a href="../shader/copy.js.html">shader/copy.js</a></li>
+          </ul>
+          <div class="scrollspy">
+            <ul class="nav nav-list bs-docs-sidenav affix-top">
+              <li><a href="#Tile"><i class="alert alert-info"></i>Tile</a>
+              </li>
+              <li><a href="#createGeometry"><i class="alert alert-info"></i>createGeometry</a>
+              </li>
+              <li><a href="#layerId"><i class="alert alert-info"></i>layerId</a>
+              </li>
+              <li><a href="#loadImages"><i class="alert alert-info"></i>loadImages</a>
+              </li>
+              <li><a href="#materialIdForGid"><i class="alert alert-info"></i>materialIdForGid</a>
+              </li>
+              <li><a href="#setLayerOpacity"><i class="alert alert-info"></i>setLayerOpacity</a>
+              </li>
+              <li><a href="#setMapData"><i class="alert alert-info"></i>setMapData</a>
+              </li>
+              <li><a href="#updateMapUVs"><i class="alert alert-info"></i>updateMapUVs</a>
+              </li>
+              <li><a href="#uvsForGid"><i class="alert alert-info"></i>uvsForGid</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="span9">
+          <section id="Tile">
+            <h1>Tile</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">function</div><span>Tile()</span>
+            </p>
+          </section>
+          <div class="description"><p>@constructor</p> 
+            <pre><code class="language-javascript">var Tile = function(parameters) {
+    &quot;use strict&quot;;
+    Entity.call(this, parameters);
+    this.mapData = {};
+    this.url = parameters.url ? parameters.url : '';
+    // Convience params to prevent needing to edit the json file so that the image path matches the web url.
+    this.imageUrlFind = parameters.imageUrlFind ? parameters.imageUrlFind : '';
+    this.imageUrlReplace = parameters.imageUrlReplace ? parameters.imageUrlReplace : '';
+    // If a object layer is found this function will be called for each object that was found.
+    this.onObjectFound = parameters.onObjectFound ? parameters.onObjectFound : function(layerName, objectData, tile) {
+        console.log('Found object', objectData.name, 'on layer', layerName);
+    };
+    // A dictonary of pointers to tileset images
+    this.materials = [];
+    // Each pice of geometry in this array is a renderable layer
+    this.geometries = [];
+    // used to map cordinates to tile maps.
+    this.offsetUnits = new THREE.Vector2();
+    // Load the map data
+    if (parameters.mapData) {
+        this.setMapData(parameters.mapData);
+    } else if (this.url) {
+        var that = this;
+        Misc.getJSON(this.url, function(json) {
+            that.setMapData(json);
+        });
+    }
+};
+
+Tile.prototype = Object.create(Entity.prototype);</code></pre>
+          </div>
+          <section id="createGeometry">
+            <h1>createGeometry</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>Tile.prototype.createGeometry()</span>
+            </p>
+          </section>
+          <div class="description"><p>Loads the geometry. All layers are created.</p> 
+            <pre><code class="language-javascript">Tile.prototype.createGeometry = function() {
+    this.geometries = [];
+    // Create the layers from the back layer to the front
+    for (var i = this.mapData.layers.length - 1; i &gt;= 0; i--) {
+        var layer = this.mapData.layers[i];
+        if (layer.type === &quot;tilelayer&quot;) {
+            // Create the plane geometry with a 1:1 pixel to unit rato
+            var geometry = new THREE.PlaneGeometry(this.offsetUnits.x * 2, this.offsetUnits.y * 2, layer.width, layer.height);
+            var materials = [];
+            // Clone the materials so we can adjust the opacity on a layer by layer basis
+            // https://github.com/mrdoob/three.js/issues/1507#issuecomment-4679121
+            // mrdoob: If you clone a material the compiled program gets shared. Meaning that only one program exist in memory and each material have unique uniform values.
+            for (var j = 0; j &lt; this.materials.length; j++) {
+                materials.push(this.materials[j].clone());
+            }
+            var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+            mesh.position.z = i * 0.5;
+            mesh.name = layer.name;
+            this.geometries[i] = mesh;
+            this.add(mesh);
+        } else if (layer.type === 'objectgroup') {
+            this.geometries[i] = new THREE.Geometry();
+            this.geometries[i].position = new THREE.Vector3(0, 0, i * 0.5);
+            // run the onObjectFound callback for every object found
+            for (var id in layer.objects) {
+                this.onObjectFound(layer.name, layer.objects[id], this);
+            }
+        }
+    }
+};</code></pre>
+          </div>
+          <section id="layerId">
+            <h1>layerId</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>Tile.prototype.layerId()</span>
+            </p>
+          </section>
+          <div class="description"><p>@return {int} || {false} If the layer was found return its index, otherwise return false</p> 
+            <pre><code class="language-javascript">Tile.prototype.layerId = function(layerName) {
+    var found = false;
+    for (var i = 0; i &lt; this.mapData.layers.length; i++) {
+        if (this.mapData.layers[i].name === layerName) {
+            layerName = i;
+            return i;
+        }
+    }
+    return false;
+};</code></pre>
+          </div>
+          <section id="loadImages">
+            <h1>loadImages</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>Tile.prototype.loadImages()</span>
+            </p>
+          </section>
+          <div class="description"><p>Load all images in the tileset and create textures to be used as tiles.</p> 
+            <pre><code class="language-javascript">Tile.prototype.loadImages = function() {
+    for (var i = 0; i &lt; this.mapData.tilesets.length; i++) {
+        var url = this.mapData.tilesets[i].image;
+        var name = this.mapData.tilesets[i].name;
+        var texture = THREE.ImageUtils.loadTexture(url.replace(this.imageUrlFind, this.imageUrlReplace), new THREE.UVMapping());
+        texture.name = name;
+        texture.magFilter = THREE.NearestFilter;
+        texture.minFilter = THREE.NearestMipMapNearestFilter;
+        this.materials.push(new THREE.MeshBasicMaterial({
+            map: texture,
+            transparent: true
+        }));
+    }
+};
+
+Tile.prototype.mapToTile = function(position) {
+    var ret = position.clone();
+    ret.set( ret.x - this.offsetUnits.x, this.offsetUnits.y - ret.y, ret.z );
+    return ret;
+};</code></pre>
+          </div>
+          <section id="materialIdForGid">
+            <h1>materialIdForGid</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>Tile.prototype.materialIdForGid()</span>
+            </p>
+          </section>
+          <div class="description"><p>@returns {int} the proper material index used to map the proper image atlas to a face.</p> 
+            <pre><code class="language-javascript">Tile.prototype.materialIdForGid = function(gid) {
+    var tilesets = this.mapData.tilesets;
+    var ret = 0;
+    for (var i = 0; i &lt; tilesets.length; i++) {
+        if (gid &gt;= tilesets[i].firstgid) {
+            ret = i;
+        } else {
+            break;
+        }
+    }
+    return ret;
+};</code></pre>
+          </div>
+          <section id="setLayerOpacity">
+            <h1>setLayerOpacity</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>Tile.prototype.setLayerOpacity()</span>
+            </p>
+          </section>
+          <div class="description"><p>Given a layer name or layer id, set the opacity of the layer.</p> 
+            <pre><code class="language-javascript">Tile.prototype.setLayerOpacity = function(layer, opacity) {
+    if (typeof layer === 'string') {
+        layer = this.layerId(layer);
+        if (layer === false) {
+            return false;
+        }
+    }
+    var materials = this.geometries[layer].material.materials;
+    for (var material in materials) {
+        materials[material].opacity = opacity;
+    }
+    return true;
+};</code></pre>
+          </div>
+          <section id="setMapData">
+            <h1>setMapData</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>Tile.prototype.setMapData()</span>
+            </p>
+          </section>
+          <div class="description"><p>Process the given map data, load its tileset images, and create the geometry.</p> 
+            <pre><code class="language-javascript">Tile.prototype.setMapData = function(mapData) {
+    this.mapData = mapData;
+    for (var geo in this.geometries) {
+        this.remove(geometries[geo]);
+    }
+    this.offsetUnits.set(this.mapData.tilewidth * this.mapData.width / 2, this.mapData.tileheight * this.mapData.height / 2);
+    this.materials = [];
+    this.geometries = [];
+    this.loadImages();
+    this.createGeometry();
+    this.updateMapUVs();
+};</code></pre>
+          </div>
+          <section id="updateMapUVs">
+            <h1>updateMapUVs</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>Tile.prototype.updateMapUVs()</span>
+            </p>
+          </section>
+          <div class="description"><p>Update the uv's for all layers of the tile map.</p> 
+            <pre><code class="language-javascript">Tile.prototype.updateMapUVs = function() {
+
+    // Make each tile point to the correct image and update the uv cordinates
+    for (var i = 0; i &lt; this.geometries.length; i++) {
+        var layer = this.mapData.layers[i];
+        if (layer.type === 'tilelayer') {
+            var faces = this.geometries[i].geometry.faces;
+            var facesUVS = this.geometries[i].geometry.faceVertexUvs[0];
+            var layerData = layer.data;
+            for (var j = 0; j &lt; facesUVS.length; j++) {
+                var faceUVs = this.uvsForGid(layerData[j]);
+                faces[j].materialIndex = (this.materialIdForGid(layerData[j]));
+                for (var k = 0; k &lt; faceUVs.length; k++) {
+                    facesUVS[j][k].set(faceUVs[k].x, faceUVs[k].y);
+                }
+            }
+            this.geometries[i].geometry.uvsNeedUpdate = true;
+            // for some reason this hides the layers under it.
+            this.geometries[i].visible = this.mapData.layers[i].visible;
+            this.setLayerOpacity(i, this.mapData.layers[i].opacity);
+        }
+    }
+};</code></pre>
+          </div>
+          <section id="uvsForGid">
+            <h1>uvsForGid</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>Tile.prototype.uvsForGid()</span>
+            </p>
+          </section>
+          <div class="description"><p>Returns the uv cordinates for a face to show a tile of the given Global ID. These are<br />in the same order as geometry.faceVertexUvs.<br />Note: Currently you can not have a image larger than the size required for tiles.</p> 
+            <pre><code class="language-javascript">Tile.prototype.uvsForGid = function(gid) {
+    var ret = [new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2()];
+    // This tile has no id set treat it as empty
+    if (gid === 0) {
+        return ret;
+    }
+    var matID = this.materialIdForGid(gid);
+    var tileset = this.mapData.tilesets[matID];
+    var imagewidth = tileset.imagewidth;
+    var imageheight = tileset.imageheight;
+    var tilewidth = tileset.tilewidth;
+    var tileheight = tileset.tileheight;
+    var spacing = tileset.spacing;
+    var margin = tileset.margin;
+    // This is the tile id for this texture
+    var localid = gid - tileset.firstgid;
+    // Calulate the number of tiles wide the document is
+    var tilesWide = Math.floor((imagewidth + spacing - margin * 2) / (tilewidth + spacing));
+    var tilesHeigh = Math.floor((imageheight + spacing - margin * 2) / (tileheight + spacing));
+    // Calculate the tile address
+    var row = Math.floor(localid / tilesWide);
+    var column = localid - tilesWide * row;
+
+    var iWidth = tilesWide * tilewidth + (tilesWide - 1) * spacing + margin * 2;
+    var iHeight = tilesHeigh * tileheight + (tilesHeigh - 1) * spacing + margin * 2;
+
+    var normSpacing = spacing / iWidth;
+    var normMargin = margin / iWidth;
+    var normTileWidth = tilewidth / iWidth;
+    var normTileHeight = tileheight / iHeight;
+
+    // Note I had to fudge the calculations for rect[0].x buy adding a percet of normSpacing.
+    ret[0].set(column * normTileWidth + column * normSpacing + normMargin + normSpacing * 0.35,
+    1 - (row * normTileHeight + row * normSpacing - normMargin));
+    ret[1].set(ret[0].x, ret[0].y - normTileHeight);
+    ret[2].set(ret[0].x + normTileWidth - normSpacing, ret[1].y);
+    ret[3].set(ret[2].x, ret[0].y);
+
+    return ret;
+};
+
+// Exports.
+module.exports = Tile;</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="footer">
+      <div class="container">
+        <p>Documentation generated with<a href="https://github.com/FGRibreau/doxx">Doxx</a>created by<a href="https://twitter.com/FGRibreau" data-show-count="false" class="twitter-follow-button">Francois-Guillaume Ribreau</a></p>
+        <p>Doxx is sponsored by<a href="http://bringr.net/?btt" title="Outil d'analyse des réseaux sociaux" class="bringr">Bringr</a>and<a href="https://redsmin.com/?btt" title="Full Redis GUI" class="redsmin">Redsmin</a></p>
+        <p>Theme borrowed from Twitter Bootstrap</p>
+      </div>
+    </footer>
+    <script src="http://platform.twitter.com/widgets.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+    <script src="http://leaverou.github.com/prefixfree/prefixfree.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-transition.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-scrollspy.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-dropdown.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-affix.js"></script>
+    <script>
+      /**
+       * Prism: Lightweight, robust, elegant syntax highlighting
+       * MIT license http://www.opensource.org/licenses/mit-license.php/
+       * @author Lea Verou http://lea.verou.me
+       */(function(){var e=/\blang(?:uage)?-(?!\*)(\w+)\b/i,t=self.Prism={util:{type:function(e){return Object.prototype.toString.call(e).match(/\[object (\w+)\]/)[1]},clone:function(e){var n=t.util.type(e);switch(n){case"Object":var r={};for(var i in e)e.hasOwnProperty(i)&&(r[i]=t.util.clone(e[i]));return r;case"Array":return e.slice()}return e}},languages:{extend:function(e,n){var r=t.util.clone(t.languages[e]);for(var i in n)r[i]=n[i];return r},insertBefore:function(e,n,r,i){i=i||t.languages;var s=i[e],o={};for(var u in s)if(s.hasOwnProperty(u)){if(u==n)for(var a in r)r.hasOwnProperty(a)&&(o[a]=r[a]);o[u]=s[u]}return i[e]=o},DFS:function(e,n){for(var r in e){n.call(e,r,e[r]);t.util.type(e)==="Object"&&t.languages.DFS(e[r],n)}}},highlightAll:function(e,n){var r=document.querySelectorAll('code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code');for(var i=0,s;s=r[i++];)t.highlightElement(s,e===!0,n)},highlightElement:function(r,i,s){var o,u,a=r;while(a&&!e.test(a.className))a=a.parentNode;if(a){o=(a.className.match(e)||[,""])[1];u=t.languages[o]}if(!u)return;r.className=r.className.replace(e,"").replace(/\s+/g," ")+" language-"+o;a=r.parentNode;/pre/i.test(a.nodeName)&&(a.className=a.className.replace(e,"").replace(/\s+/g," ")+" language-"+o);var f=r.textContent;if(!f)return;f=f.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\u00a0/g," ");var l={element:r,language:o,grammar:u,code:f};t.hooks.run("before-highlight",l);if(i&&self.Worker){var c=new Worker(t.filename);c.onmessage=function(e){l.highlightedCode=n.stringify(JSON.parse(e.data));l.element.innerHTML=l.highlightedCode;s&&s.call(l.element);t.hooks.run("after-highlight",l)};c.postMessage(JSON.stringify({language:l.language,code:l.code}))}else{l.highlightedCode=t.highlight(l.code,l.grammar);l.element.innerHTML=l.highlightedCode;s&&s.call(r);t.hooks.run("after-highlight",l)}},highlight:function(e,r){return n.stringify(t.tokenize(e,r))},tokenize:function(e,n){var r=t.Token,i=[e],s=n.rest;if(s){for(var o in s)n[o]=s[o];delete n.rest}e:for(var o in n){if(!n.hasOwnProperty(o)||!n[o])continue;var u=n[o],a=u.inside,f=!!u.lookbehind||0;u=u.pattern||u;for(var l=0;l<i.length;l++){var c=i[l];if(i.length>e.length)break e;if(c instanceof r)continue;u.lastIndex=0;var h=u.exec(c);if(h){f&&(f=h[1].length);var p=h.index-1+f,h=h[0].slice(f),d=h.length,v=p+d,m=c.slice(0,p+1),g=c.slice(v+1),y=[l,1];m&&y.push(m);var b=new r(o,a?t.tokenize(h,a):h);y.push(b);g&&y.push(g);Array.prototype.splice.apply(i,y)}}}return i},hooks:{all:{},add:function(e,n){var r=t.hooks.all;r[e]=r[e]||[];r[e].push(n)},run:function(e,n){var r=t.hooks.all[e];if(!r||!r.length)return;for(var i=0,s;s=r[i++];)s(n)}}},n=t.Token=function(e,t){this.type=e;this.content=t};n.stringify=function(e){if(typeof e=="string")return e;if(Object.prototype.toString.call(e)=="[object Array]"){for(var r=0;r<e.length;r++)e[r]=n.stringify(e[r]);return e.join("")}var i={type:e.type,content:n.stringify(e.content),tag:"span",classes:["token",e.type],attributes:{}};i.type=="comment"&&(i.attributes.spellcheck="true");t.hooks.run("wrap",i);var s="";for(var o in i.attributes)s+=o+'="'+(i.attributes[o]||"")+'"';return"<"+i.tag+' class="'+i.classes.join(" ")+'" '+s+">"+i.content+"</"+i.tag+">"};if(!self.document){self.addEventListener("message",function(e){var n=JSON.parse(e.data),r=n.language,i=n.code;self.postMessage(JSON.stringify(t.tokenize(i,t.languages[r])));self.close()},!1);return}var r=document.getElementsByTagName("script");r=r[r.length-1];if(r){t.filename=r.src;document.addEventListener&&!r.hasAttribute("data-manual")&&document.addEventListener("DOMContentLoaded",t.highlightAll)}})();;
+      Prism.languages.markup={comment:/&lt;!--[\w\W]*?--(&gt;|&gt;)/g,prolog:/&lt;\?.+?\?&gt;/,doctype:/&lt;!DOCTYPE.+?&gt;/,cdata:/&lt;!\[CDATA\[[\w\W]+?]]&gt;/i,tag:{pattern:/&lt;\/?[\w:-]+\s*(?:\s+[\w:-]+(?:=(?:("|')(\\?[\w\W])*?\1|\w+))?\s*)*\/?&gt;/gi,inside:{tag:{pattern:/^&lt;\/?[\w:-]+/i,inside:{punctuation:/^&lt;\/?/,namespace:/^[\w-]+?:/}},"attr-value":{pattern:/=(?:('|")[\w\W]*?(\1)|[^\s>]+)/gi,inside:{punctuation:/=|&gt;|"/g}},punctuation:/\/?&gt;/g,"attr-name":{pattern:/[\w:-]+/g,inside:{namespace:/^[\w-]+?:/}}}},entity:/&amp;#?[\da-z]{1,8};/gi};Prism.hooks.add("wrap",function(e){e.type==="entity"&&(e.attributes.title=e.content.replace(/&amp;/,"&"))});;
+      Prism.languages.css={comment:/\/\*[\w\W]*?\*\//g,atrule:/@[\w-]+?(\s+[^;{]+)?(?=\s*{|\s*;)/gi,url:/url\((["']?).*?\1\)/gi,selector:/[^\{\}\s][^\{\}]*(?=\s*\{)/g,property:/(\b|\B)[a-z-]+(?=\s*:)/ig,string:/("|')(\\?.)*?\1/g,important:/\B!important\b/gi,ignore:/&(lt|gt|amp);/gi,punctuation:/[\{\};:]/g};Prism.languages.markup&&Prism.languages.insertBefore("markup","tag",{style:{pattern:/(&lt;|<)style[\w\W]*?(>|&gt;)[\w\W]*?(&lt;|<)\/style(>|&gt;)/ig,inside:{tag:{pattern:/(&lt;|<)style[\w\W]*?(>|&gt;)|(&lt;|<)\/style(>|&gt;)/ig,inside:Prism.languages.markup.tag.inside},rest:Prism.languages.css}}});;
+      Prism.languages.clike={comment:{pattern:/(^|[^\\])(\/\*[\w\W]*?\*\/|\/\/.*?(\r?\n|$))/g,lookbehind:!0},string:/("|')(\\?.)*?\1/g,keyword:/\b(if|else|while|do|for|return|in|instanceof|function|new|try|catch|finally|null|break|continue)\b/g,"boolean":/\b(true|false)\b/g,number:/\b-?(0x)?\d*\.?[\da-f]+\b/g,operator:/[-+]{1,2}|!|=?&lt;|=?&gt;|={1,2}|(&amp;){1,2}|\|?\||\?|\*|\//g,ignore:/&(lt|gt|amp);/gi,punctuation:/[{}[\];(),.:]/g};;
+      Prism.languages.javascript=Prism.languages.extend("clike",{keyword:/\b(var|let|if|else|while|do|for|return|in|instanceof|function|new|with|typeof|try|catch|finally|null|break|continue)\b/g,number:/\b(-?(0x)?\d*\.?[\da-f]+|NaN|-?Infinity)\b/g});Prism.languages.insertBefore("javascript","keyword",{regex:{pattern:/(^|[^/])\/(?!\/)(\[.+?]|\\.|[^/\r\n])+\/[gim]{0,3}(?=\s*($|[\r\n,.;})]))/g,lookbehind:!0}});Prism.languages.markup&&Prism.languages.insertBefore("markup","tag",{script:{pattern:/(&lt;|<)script[\w\W]*?(>|&gt;)[\w\W]*?(&lt;|<)\/script(>|&gt;)/ig,inside:{tag:{pattern:/(&lt;|<)script[\w\W]*?(>|&gt;)|(&lt;|<)\/script(>|&gt;)/ig,inside:Prism.languages.markup.tag.inside},rest:Prism.languages.javascript}}});;
+      
+    </script>
+    <!-- App js-->
+    <script>
+      $(function(){
+        var $window = $(window);
+        $('.scrollspy .nav').affix({
+          offset: {
+            top: function () { return $window.width() <= 980 ? 480 : 400 }
+          , bottom: 50
+          }
+        });
+      })
+    </script>
+  </body>
+</html>
