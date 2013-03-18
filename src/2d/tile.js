@@ -4,28 +4,66 @@ var Misc = require('../misc');
 
 /*
  * @constructor
+ * There are several callbacks that can be passed in. See the documentation for each callback in this function.
  * @param: {url} the url to download the map json file from.
+ * @param: {mapData} dictionary of mapData. If provided the url parameter is ignored.
  * @param: {imageUrlFind} Find this text in any image urls and replace it with imageUrlReplace. This is useful
  *         because the image path provided by tiled most likely does not match the server url.
  * @param: {imageUrlReplace} The text in imageUrlFind will be replaced by this text.
- * @param: {onObjectFound} Every time a object is found on a object layer this function will be called.
- *          You can use this to create entities or process info. It passes two arguments, the layer name and 
- *          the object parameters provided by Tiled.
- * @param: {mapData} dictionary of mapData. If provided ignores url parmiter.
  * @returns {TileMap} A tile map instance.
  */
 var Tile = function(parameters) {
     "use strict";
     Entity.call(this, parameters);
     this.mapData = {};
+    // Store a copy of the original map data so we can restore later.
+    this.mapDataOriginal = {};
     this.url = parameters.url ? parameters.url : '';
     // Convience params to prevent needing to edit the json file so that the image path matches the web url.
     this.imageUrlFind = parameters.imageUrlFind ? parameters.imageUrlFind : '';
     this.imageUrlReplace = parameters.imageUrlReplace ? parameters.imageUrlReplace : '';
-    // If a object layer is found this function will be called for each object that was found.
-    this.onObjectFound = parameters.onObjectFound ? parameters.onObjectFound : function(layerName, objectData, tile) {
-        console.log('Found object', objectData.name, 'on layer', layerName);
-    };
+    /* onPropFound(properties, propType, tile)
+     * Generic callback if the more specific callbacks were not found.
+     * @param {properties} A list of the found properties.
+     * @param {propType} This can be used to detect what type of property this is. See Tile.Prop...
+     * @param {tile} The BOWSER.Tile object the map parameters belong to.
+     */
+    this.onPropFound = parameters.onPropFound ? parameters.onPropFound : undefined;
+    // Specific property callbacks.
+    /* onObjectFound(layerName, objectData, tile)
+     * Callback for each object in a object layer.
+     * @param {layerName} The name of the layer the object belongs to.
+     * @param {objectData} The data stored under the object. You can use this to rebuild the shapes.
+     * @param {tile} The BOWSER.Tile object the map parameters belong to.
+     */
+    this.onObjectFound = parameters.onObjectFound ? parameters.onObjectFound : undefined;
+    /* onMapPropsFound(properties, tile)
+     * Called if map properties are found.
+     * @param {properties} A list of all properties found for the map.
+     * @param {tile} The BOWSER.Tile object the map parameters belong to.
+     */
+    this.onMapPropsFound = parameters.onMapPropsFound ? parameters.onMapPropsFound : undefined;
+    /* onLayerPropsFound(layerName, properties, tile)
+     * Called for each layer that has properties.
+     * @param {layerName} Name of the layer the properties were found on.
+     * @param {properties} A list of all properties found for the layer.
+     * @param {tile} The BOWSER.Tile object the layer parameters belong to.
+     */
+    this.onLayerPropsFound = parameters.onLayerPropsFound ? parameters.onLayerPropsFound : undefined;
+    /* onTilesetPropsFound(properties, tileset, tile)
+     * Called for each tileset with properties on it.
+     * @param {properties} A list of all properties found for the tileset.
+     * @param {tileset} The tileset the properties were belong to.
+     * @param {tile} The BOWSER.Tile object the map parameters belong to.
+     */
+    this.onTilesetPropsFound = parameters.onTilesetPropsFound ? parameters.onTilesetPropsFound : undefined;
+    /* onTilePropFound(gid, properties, tile)
+     * Called for each tile that properties are found on.
+     * @param {gid} The global id the tile properties belong to.
+     * @param {properties} A list of all properties found for the tileset.
+     * @param {tile} The BOWSER.Tile object the map parameters belong to.
+     */
+    this.onTilePropFound = parameters.onTilePropFound ? parameters.onTilePropFound : undefined;
     // A dictonary of pointers to tileset images
     this.materials = [];
     // Each pice of geometry in this array is a renderable layer
@@ -44,6 +82,11 @@ var Tile = function(parameters) {
 };
 
 Tile.prototype = Object.create(Entity.prototype);
+// Property Identifier enums.
+Tile.prototype.PropMap = 1;
+Tile.prototype.PropLayer = 2;
+Tile.prototype.PropTileSet = 3;
+Tile.prototype.PropTile = 4;
 
 /*
  * Loads the geometry. All layers are created.
@@ -72,10 +115,50 @@ Tile.prototype.createGeometry = function() {
             this.geometries[i] = new THREE.Geometry();
             this.geometries[i].position = new THREE.Vector3(0, 0, i * 0.5);
             // run the onObjectFound callback for every object found
-            for (var id in layer.objects) {
-                this.onObjectFound(layer.name, layer.objects[id], this);
+            if (this.onObjectFound !== undefined) {
+                for (var id in layer.objects) {
+                    this.onObjectFound(layer.name, layer.objects[id], this);
+                }
             }
         }
+    }
+};
+
+/*
+ * Get the current gid for a given tile.
+ * @param {parameters} A dictonary of options
+ *      @param {tileId} The tile id number to look up the gid.
+ *      @param {layerId} The layer id number or name to look up the gid.
+ *      @param {original} Optional, If true return the orginal gid at the last time setMapData was called.
+ * @return {int} The gid currently assigned to the tile'
+ */
+Tile.prototype.gidForTileAndLayer = function(parameters) {
+    var layerId = this.layerId(parameters.layerId);
+    var tileId = parameters.tileId;
+    var layer;
+    if (parameters.original && parameters.original === true) {
+        layer = this.mapDataOriginal.layers[layerId];
+    } else {
+        layer = this.mapData.layers[layerId];
+    }
+    if (layer.type === 'tilelayer' && tileId in layer.data) {
+        return layer.data[tileId];
+    }
+};
+
+/*
+ * Given a layer name or layer id, return the opacity of the layer.
+ * @param {parameters} A dictonary of options
+ *      @param: {layerId} The name or index of the layer to change opacity.
+ *      @param {original} Optional, If true return the orginal gid at the last time setMapData was called.
+ * @returns {Array} An array of gids for all tiles in this layer.
+ */
+Tile.prototype.layerData = function(parameters) {
+    var layerId = this.layerId(parameters.layerId);
+    if (parameters.original && parameters.original === true) {
+        return this.mapDataOriginal.layers[layerId].data;
+    } else {
+        return this.mapData.layers[layerId].data;
     }
 };
 
@@ -84,6 +167,9 @@ Tile.prototype.createGeometry = function() {
  */
 Tile.prototype.layerId = function(layerName) {
     var found = false;
+    if (typeof layerName === 'number') {
+        return layerName;
+    }
     for (var i = 0; i < this.mapData.layers.length; i++) {
         if (this.mapData.layers[i].name === layerName) {
             layerName = i;
@@ -91,6 +177,22 @@ Tile.prototype.layerId = function(layerName) {
         }
     }
     return false;
+};
+
+/*
+ * Given a layer name or layer id, return the opacity of the layer.
+ * @param {parameters} A dictonary of options
+ *      @param: {layerId} The name or index of the layer to change opacity.
+ *      @param {original} Optional, If true return the orginal gid at the last time setMapData was called.
+ * @returns {float} The opacity of the layer.
+ */
+Tile.prototype.layerOpacity = function(parameters) {
+    var layerId = this.layerId(parameters.layerId);
+    if (parameters.original && parameters.original === true) {
+        return this.mapDataOriginal.layers[layerId].opacity;
+    } else {
+        return this.mapData.layers[layerId].opacity;
+    }
 };
 
 /*
@@ -113,7 +215,7 @@ Tile.prototype.loadImages = function() {
 
 Tile.prototype.mapToTile = function(position) {
     var ret = position.clone();
-    ret.set( ret.x - this.offsetUnits.x, this.offsetUnits.y - ret.y, ret.z );
+    ret.set(ret.x - this.offsetUnits.x, this.offsetUnits.y - ret.y, ret.z);
     return ret;
 };
 
@@ -135,21 +237,17 @@ Tile.prototype.materialIdForGid = function(gid) {
 
 /*
  * Given a layer name or layer id, set the opacity of the layer.
- * @param: {layer} The name or index of the layer to change opacity.
+ * @param: {layerId} The name or index of the layer to change opacity.
  * @param: {opacity} Normalized float value of opacity.
  * @returns {bool} If the layer was found.
  */
-Tile.prototype.setLayerOpacity = function(layer, opacity) {
-    if (typeof layer === 'string') {
-        layer = this.layerId(layer);
-        if (layer === false) {
-            return false;
-        }
-    }
-    var materials = this.geometries[layer].material.materials;
+Tile.prototype.setLayerOpacity = function(layerId, opacity) {
+    layerId = this.layerId(layerId);
+    var materials = this.geometries[layerId].material.materials;
     for (var material in materials) {
         materials[material].opacity = opacity;
     }
+    this.mapData.layers[layerId].opacity = opacity;
     return true;
 };
 
@@ -159,6 +257,8 @@ Tile.prototype.setLayerOpacity = function(layer, opacity) {
  */
 Tile.prototype.setMapData = function(mapData) {
     this.mapData = mapData;
+    // Duplicate the map data so you can compare the current state to the original.
+    this.mapDataOriginal = JSON.parse(JSON.stringify(this.mapData));
     for (var geo in this.geometries) {
         this.remove(geometries[geo]);
     }
@@ -168,13 +268,92 @@ Tile.prototype.setMapData = function(mapData) {
     this.loadImages();
     this.createGeometry();
     this.updateMapUVs();
+    // Process map properties
+    if (Object.getOwnPropertyNames(this.mapData.properties).length !== 0) {
+        if (this.onMapPropsFound !== undefined) {
+            this.onMapPropsFound(this.mapData.properties, this);
+        } else {
+            // Emit generic callback if one was not provided.
+            if (this.onPropFound !== undefined) {
+                this.onPropFound(this.mapData.properties, this.PropMap, this);
+            }
+        }
+    }
+    // process Layer properties
+    var layers = this.mapData.layers;
+    for (var layer in layers) {
+        if ('properties' in layers[layer]) {
+            if (this.onLayerPropsFound !== undefined) {
+                this.onLayerPropsFound(layers[layer].name, layers[layer].properties, self);
+            } else {
+                // Emit generic callback if one was not provided.
+                if (this.onPropFound !== undefined) {
+                    this.onPropFound(layers[layer].properties, this.PropLayer, this);
+                }
+            }
+        }
+    }
+    var tilesets = this.mapData.tilesets;
+    for (var tileset in tilesets) {
+        // Process tileset properties
+        if (Object.getOwnPropertyNames(tilesets[tileset].properties).length !== 0) {
+            if (this.onTilesetPropsFound !== undefined) {
+                this.onTilesetPropsFound(tilesets[tileset].properties, tilesets[tileset], this);
+            } else {
+                // Emit generic callback if one was not provided.
+                if (this.onPropFound !== undefined) {
+                    this.onPropFound(tilesets[tileset].properties, this.PropTileSet, this);
+                }
+            }
+        }
+        // Process individual tile properties
+        if ('tileproperties' in tilesets[tileset]) {
+            var tileproperties = tilesets[tileset].tileproperties;
+            if (this.onTilePropFound !== undefined) {
+                for (var tile in tileproperties) {
+                    this.onTilePropFound(tile, tileproperties[tile], this);
+                }
+            } else {
+                // Emit generic callback if one was not provided.
+                if (this.onPropFound !== undefined) {
+                    this.onPropFound(tileproperties, this.PropTile, this);
+                }
+            }
+        }
+    }
+};
+
+/*
+ * Set the tile to the given global id.
+ * @param {gid} The new tileset global id.
+ * @param {tileId} The tile to apply the gid to.
+ * @param {layerId} The layer name or number to apply the gid.
+ * Note: If a tile gid requires changing tileset you will need to re-create the geometry.
+ */
+Tile.prototype.setTileGid = function(gid, tileId, layerId) {
+    layerId = this.layerId(layerId);
+    var layer = this.mapData.layers[layerId];
+    if (layer.type === 'tilelayer') {
+        var faces = this.geometries[layerId].geometry.faces;
+        var facesUVS = this.geometries[layerId].geometry.faceVertexUvs[0];
+        var faceUVs = this.uvsForGid(gid);
+        // Note: MaterialIndex is only used once, at first render when it breaks geometry into batches 
+        //       of triangles with the same material. If you need to update the guid for a tile you should
+        //       make sure all required tiles are on the same texture set.
+        faces[tileId].materialIndex = (this.materialIdForGid(gid));
+        for (var k = 0; k < faceUVs.length; k++) {
+            facesUVS[tileId][k].set(faceUVs[k].x, faceUVs[k].y);
+        }
+        layer.data[tileId] = gid;
+        this.geometries[layerId].geometry.uvsNeedUpdate = true;
+    }
 };
 
 /*
  * Update the uv's for all layers of the tile map.
+ * Note: If a tile gid requires changing tileset you will need to re-create the geometry.
  */
 Tile.prototype.updateMapUVs = function() {
-
     // Make each tile point to the correct image and update the uv cordinates
     for (var i = 0; i < this.geometries.length; i++) {
         var layer = this.mapData.layers[i];
@@ -184,6 +363,9 @@ Tile.prototype.updateMapUVs = function() {
             var layerData = layer.data;
             for (var j = 0; j < facesUVS.length; j++) {
                 var faceUVs = this.uvsForGid(layerData[j]);
+                // Note: MaterialIndex is only used once, at first render when it breaks geometry into batches 
+                //       of triangles with the same material. If you need to update the guid for a tile you should
+                //       make sure all required tiles are on the same texture set.
                 faces[j].materialIndex = (this.materialIdForGid(layerData[j]));
                 for (var k = 0; k < faceUVs.length; k++) {
                     facesUVS[j][k].set(faceUVs[k].x, faceUVs[k].y);
