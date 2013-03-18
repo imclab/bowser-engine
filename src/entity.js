@@ -6,9 +6,10 @@ var Sound = require('./sound');
 
 /**
  * The entity object represent the idea of an idependant self-mangage object. For instance a character or a vehicle.
- * @constructor
- * @param {Boolean} dynamic Entity will be moving.
- * @returns {Entity}
+ * Although broke out individually, arguments should be passed as a single parameters javascript object.
+ * @param {Boolean} dynamic Determines if the entity will see its kinematic at each update as well as react to game physic.
+ * @param {THREE.Vector3} position Position of the entity in space.
+ * @param {Boolean} visible Defines if the entity is render visible.
  */
 var Entity = function(parameters) {
     "use strict";
@@ -157,8 +158,6 @@ Entity.prototype.init = function() {
 
 /**
  * Updates the entity.
- * @method
- * @returns {undefined}
  */
 Entity.prototype.update = function() {
 
@@ -236,10 +235,22 @@ Entity.prototype.update = function() {
 };
 
 /**
+ * Returns an extented version of Entity using prototypal inheritance.
+ * This should be used for any custom entity creation.
+ * @param {Object} extension An object containing what will be added to the extended entity prototype.
+ */
+Entity.prototype.extend = function(extensions) {
+    var Extended = extensions.constructor;
+    Extended.prototype = Object.create(Entity.prototype);
+    for (var key in extensions) {
+        Extended.prototype[key] = extensions[key];
+    }
+    return Extended;
+};
+
+/**
  * Affects the position and velocity off the entity based on detected collisions.
- * @method
  * @param {Vector3} position
- * @returns {undefined}
  */
 Entity.prototype.handleCollisions = function() {
 

@@ -8,7 +8,7 @@ var RenderPass = require('../pass/render');
  * @constructor
  * @returns {Scene3} A scene object.
  */
-var That = function(parameters) {
+var Scene3D = function(parameters) {
 	"use strict";
 	Scene.call(this, parameters);
 
@@ -42,17 +42,17 @@ var That = function(parameters) {
 	this.onConstruction();
 };
 
-That.prototype = Object.create(Scene.prototype);
+Scene3D.prototype = Object.create(Scene.prototype);
 
 /**
  * Sets the resolution of the scene by basically changing the camera aspect and updating it's projection matrix.
  * @param {Number} width
  * @param {Number} height
  */
-That.prototype.setResolution = function(width, height) {
+Scene3D.prototype.setResolution = function(width, height) {
 	this.camera.aspect = width / height;
 	this.camera.updateProjectionMatrix();
 };
 
 // Exports.
-module.exports = That;
+module.exports = Scene3D;

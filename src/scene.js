@@ -6,7 +6,7 @@ var Collider = require('./collider');
  * @constructor
  * @param {Game} game A game instance.
  */
-var That = function(parameters) {
+var Scene = function(parameters) {
     "use strict";
     THREE.Scene.call(this);
 
@@ -28,12 +28,12 @@ var That = function(parameters) {
     }
 };
 
-That.prototype = Object.create(THREE.Scene.prototype);
+Scene.prototype = Object.create(THREE.Scene.prototype);
 
 /**
  * Allows to add entities to the scene.
  */
-That.prototype.add = function(object) {
+Scene.prototype.add = function(object) {
 
     // Linking the scene to the object.
     object.scene = this;
@@ -50,7 +50,7 @@ That.prototype.add = function(object) {
  * Updates the scene and it's children
  * @returns {undefined}
  */
-That.prototype.update = function() {
+Scene.prototype.update = function() {
 
     // Updates all children with an update method.
     for(var key in this.children) {
@@ -66,7 +66,7 @@ That.prototype.update = function() {
 /**
  * Shows the active colliders.
  */
-That.prototype.showColliders = function() {
+Scene.prototype.showColliders = function() {
     for (var key in this.colliders) {
         if (this.colliders[key] instanceof Collider) {
             this.colliders[key].visible = true;
@@ -77,7 +77,7 @@ That.prototype.showColliders = function() {
 /**
  * Hides all colliders.
  */
-That.prototype.hideColliders = function() {
+Scene.prototype.hideColliders = function() {
     for (var key in this.colliders) {
         if (this.colliders[key] instanceof Collider) {
             this.colliders[key].visible = false;
@@ -86,7 +86,7 @@ That.prototype.hideColliders = function() {
 };
 
 // Exports.
-module.exports = That;
+module.exports = Scene;
 
 
 

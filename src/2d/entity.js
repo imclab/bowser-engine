@@ -4,7 +4,7 @@ var Entity = require('../entity');
 var Misc = require('../misc');
 
 /**
- * @constructor
+ * Entity used in a Scene2D.
  * @param {Game} game A game instance.
  */
 var Entity2D = function(parameters) {

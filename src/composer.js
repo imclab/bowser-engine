@@ -6,7 +6,7 @@ var RenderPass = require('./pass/render');
 
 /**
  * The composer object allows to overlay several scenes as well as shaders passes.
- * The code for this object is based on atleredq THREE.EffectComposer class.
+ * The code for this object is based on atleredq's THREE.EffectComposer.
  * @constructor
  */
 var Composer = function(game) {

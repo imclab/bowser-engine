@@ -1,11 +1,14 @@
 // Imports.
 var THREE = require('three');
 
-var That = {
+/**
+ * The misc object holds a collection of useful static methods.
+ * @type {Object}
+ */
+var Misc = {
 
    /**
     * Returns a random color.
-    * @static
     * @returns {Number} A random hexadecimal color.
     */
    getRandomColor: function() {
@@ -79,4 +82,4 @@ var That = {
 };
 
 // Exports.
-module.exports = That;
+module.exports = Misc;

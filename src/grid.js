@@ -7,7 +7,7 @@ var Entity3D = require('./3d/entity');
  * @constructor
  * @returns {Grid} A Grid object.
  */
-var That = function(parameters) {
+var Grid = function(parameters) {
     Entity3D.call(this, parameters);
 
     var i, geometry = new THREE.Geometry();
@@ -145,7 +145,7 @@ var That = function(parameters) {
     }), THREE.LinePieces));
 };
 
-That.prototype = Object.create(Entity3D.prototype);
+Grid.prototype = Object.create(Entity3D.prototype);
 
 // Exports.
-module.exports = That;
+module.exports = Grid;

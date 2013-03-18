@@ -5,9 +5,9 @@ var THREE = require('three');
  * Initializes the monitor object. GUI object to monitor game properties.
  * Each property takes the form of a output object.
  * @constructor
- * @returns {That}
+ * @returns {Monitor}
  */
-var That = function(game) {
+var Monitor = function(game) {
 	this.game = game;
 
 	// Creating the monitor div.
@@ -40,7 +40,7 @@ var That = function(game) {
  * Shows the monitor's div my attaching it to the DOM. Needs the DOM.
  * @return {undefined}
  */
-That.prototype.show = function() {
+Monitor.prototype.show = function() {
 	this.visible = true;
 	this.game.div.appendChild(this.div);
 };
@@ -49,7 +49,7 @@ That.prototype.show = function() {
  * Hides the monitor's div and makes sure the value do not get updated anymore.
  * @return {undefined}
  */
-That.prototype.hide = function() {
+Monitor.prototype.hide = function() {
 	if(this.visible) {
 		this.game.div.removeChild(this.div);
 		this.visible = false;
@@ -60,7 +60,7 @@ That.prototype.hide = function() {
  * Updates the avalaible outputs' values.
  * @return {undefined}
  */
-That.prototype.update = function() {
+Monitor.prototype.update = function() {
 	var name, item, div;
 
 	if(this.visible) {
@@ -86,7 +86,7 @@ That.prototype.update = function() {
 /**
  * Adds a output to the monitor.
  */
-That.prototype.addOutput = function(name, pointer, property, decimals) {
+Monitor.prototype.addOutput = function(name, pointer, property, decimals) {
 	var div;
 
 	decimals = decimals ? decimals : 0;
@@ -120,7 +120,7 @@ That.prototype.addOutput = function(name, pointer, property, decimals) {
 /**
  * Adds a input to the monitor that also allows input.
  */
-That.prototype.addInput = function(name, pointer, property, decimals) {
+Monitor.prototype.addInput = function(name, pointer, property, decimals) {
 	var that = this;
 	var div, input;
 
@@ -184,10 +184,10 @@ That.prototype.addInput = function(name, pointer, property, decimals) {
  * @param  {String} name The output's name.
  * @return {undefined}
  */
-That.prototype.removeItem = function(name) {
+Monitor.prototype.removeItem = function(name) {
 	this.div.removeChild(this.items[name].div);
 	delete(this.items[name]);
 };
 
 // Exports.
-module.exports = That;
+module.exports = Monitor;

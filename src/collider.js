@@ -11,7 +11,7 @@ var THREE = require('three');
  * @param {Boolean} visible Rendered or not.
  * @param {Boolean} zone Other colliders can "walkthrough" this collider.
  */
-var That = function(parameters) {
+var Collider = function(parameters) {
     "use strict";
 
     // Processing complementary arguments.
@@ -45,13 +45,13 @@ var That = function(parameters) {
     this.zone = parameters.zone !== undefined ? parameters.zone : false;
 };
 
-That.prototype = Object.create(THREE.Mesh.prototype);
+Collider.prototype = Object.create(THREE.Mesh.prototype);
 
-That.prototype.add = function(object) {
+Collider.prototype.add = function(object) {
     console.warn('Cannot add anything to collider ' + object.key + '. Skipping.');
 };
 
-That.prototype.init = function() {
+Collider.prototype.init = function() {
 
     // Registerin in the entity.
     if(this.entity) {
@@ -69,7 +69,7 @@ That.prototype.init = function() {
 /**
  * Updates the collider object.
  */
-That.prototype.update = function() {
+Collider.prototype.update = function() {
     if(this.receive) {
         this.getCollisions();
     }
@@ -78,9 +78,9 @@ That.prototype.update = function() {
 /**
  * Gets the detected collisions.
  */
-That.prototype.getCollisions = function() {
+Collider.prototype.getCollisions = function() {
     return [];
 };
 
 // Exports.
-module.exports = That;
+module.exports = Collider;

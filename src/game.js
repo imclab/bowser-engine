@@ -15,7 +15,7 @@ var Scene2D = require('./2d/scene');
  * Initializes the game object.
  * @constructor
  */
-var That = function(parameters) {
+var Game = function(parameters) {
 	var that = this;
 
 	// Adding stuff to the head of the page.
@@ -109,7 +109,7 @@ var That = function(parameters) {
 	}
 };
 
-That.prototype.start = function(container, debug) {
+Game.prototype.start = function(container, debug) {
 	this.debug = debug ? debug : false;
 	this.container = container;
 	if (!this.debug) {
@@ -118,26 +118,26 @@ That.prototype.start = function(container, debug) {
 	this.visible = true;
 };
 
-That.prototype.run = function() {
+Game.prototype.run = function() {
 	this.clock.start();
 	this.looping = true;
 	this.loop();
 };
 
-That.prototype.stop = function() {
+Game.prototype.stop = function() {
 	this.clock.stop();
 	this.looping = false;
 };
 
-That.prototype.pause = function() {
+Game.prototype.pause = function() {
 	this.onPause();
 };
 
-That.prototype.resume = function() {
+Game.prototype.resume = function() {
 	this.onResume();
 };
 
-That.prototype.increment = function() {
+Game.prototype.increment = function() {
 	if (!this.looping) {
 		this.clock.start();
 		this.update();
@@ -150,7 +150,7 @@ That.prototype.increment = function() {
  * @method
  * @returns {undefined}
  */
-That.prototype.loop = function() {
+Game.prototype.loop = function() {
 	if (this.looping) {
 		this.update();
 		var that = this;
@@ -166,7 +166,7 @@ That.prototype.loop = function() {
  * @param {Element} container The DOM element where the game will run.
  * @returns {undefined}
  */
-That.prototype.show = function() {
+Game.prototype.show = function() {
 
 	// If container is defined and the game div is not already attached to the DOM.
 	if (this.container && !this.div.parentElement) {
@@ -182,7 +182,7 @@ That.prototype.show = function() {
  * @method
  * @returns {undefined}
  */
-That.prototype.hide = function() {
+Game.prototype.hide = function() {
 
 	// If the game div is attached to the DOM.
 	if (this.div.parentElement) {
@@ -196,7 +196,7 @@ That.prototype.hide = function() {
  * @method
  * @returns {undefined}
  */
-That.prototype.update = function() {
+Game.prototype.update = function() {
 
 	// Updating some properties.
 	this.frame += 1;
@@ -228,7 +228,7 @@ That.prototype.update = function() {
  * @method
  * @returns {undefined}
  */
-That.prototype.render = function() {
+Game.prototype.render = function() {
 	this.composer.render();
 };
 
@@ -237,7 +237,7 @@ That.prototype.render = function() {
  * @method
  * @returns {undefined}
  */
-That.prototype.connectHandlers = function() {
+Game.prototype.connectHandlers = function() {
 	var that = this;
 
 	this.handlers.windowResize = function(event) {
@@ -299,7 +299,7 @@ That.prototype.connectHandlers = function() {
  * @method
  * @return {undefined}
  */
-That.prototype.disconnectHandlers = function() {
+Game.prototype.disconnectHandlers = function() {
 	window.removeEventListener('resize', this.handlers.windowResize);
 	document.removeEventListener('webkitfullscreenchange', this.handlers.documentFullScreen);
 	this.canvas.removeEventListener('keydown', this.handlers.keyboardKeyChange);
@@ -316,7 +316,7 @@ That.prototype.disconnectHandlers = function() {
  * @method
  * @returns {undefined}
  */
-That.prototype.updateResolution = function() {
+Game.prototype.updateResolution = function() {
 	if (this.visible) {
 		var key;
 		var containerResolution = new Resolution({
@@ -392,7 +392,7 @@ That.prototype.updateResolution = function() {
  * @method
  * @param {Object} The object to be added to the game.
  */
-That.prototype.add = function(object) {
+Game.prototype.add = function(object) {
 	object.game = this;
 
 	if (object instanceof Scene) {
@@ -407,15 +407,15 @@ That.prototype.add = function(object) {
  * @method
  * @returns {undefined}
  */
-That.prototype.focus = function() {
+Game.prototype.focus = function() {
 	this.canvas.focus();
 };
 
-That.prototype.log = function(message) {
+Game.prototype.log = function(message) {
 	if (this.debug) {
 		console.log(message);
 	}
 };
 
 // Exports.
-module.exports = That;
+module.exports = Game;
