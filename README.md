@@ -3,7 +3,7 @@ bowser-engine
 
 A WebGL game engine based on three.js
 
-# Foreword
+### Foreword
 
 bowser-engine is a game engine based on an exciting technology called [WebGL](http://en.wikipedia.org/wiki/WebGL). More precisely it's based on [three.js](http://www.threejs.org), a library that takes out a lot of WebGL's boilerplate allowing us to focus on the gaming part.
 
@@ -17,4 +17,4 @@ Sometime naive approaches can be creative, but if we are doing weird things, it'
 
 Contribution are welcome, but before you get started, you might want to familiarize youself with a couple of conventions we have on board. Bowser-engine is a node package and can be installed via npm and used through the CommonJS require convention. The client-side API is a browserified version of the package. We have a single "class" per source file. These only exports the class they are made for. We use four space indentation and conform syntax to JSLint standards. Long story short, we are trying enforce constrains on the infinite flexibility of Javascript either by following some established conventions, either by creating our owns.
 
-Our [website](http://www.bowserjs.org) features [documentation](http://docs.bowserjs.org) and [tutorials](http://learn.bowserjs.org to get you started.
+Our [website](http://www.bowserjs.org) features [documentation](http://docs.bowserjs.org) and [tutorials](http://learn.bowserjs.org) to get you started.
