@@ -105,6 +105,22 @@ var Entity = function(parameters) {
     this.onConstruction();
 };
 
+/**
+ * Returns an extented version of Entity using prototypal inheritance.
+ * This should be used for any custom entity creation.
+ * @param {Object} extension An object containing what will be added to the extended entity prototype.
+ */
+Entity.extend = function(extensions) {
+    extensions = extensions instanceof Object ? extensions : {};
+    var Extended = extensions._constructor instanceof Function ? extensions._constructor : this;
+    Extended.prototype = Object.create(this.prototype);
+    for (var key in extensions) {
+        Extended.prototype[key] = extensions[key];
+    }
+    Extended.extend = this.extend;
+    return Extended;
+};
+
 Entity.prototype = Object.create(THREE.Object3D.prototype);
 
 Entity.prototype.add = function(object) {
@@ -232,20 +248,6 @@ Entity.prototype.update = function() {
     this.displacement.set(0, 0, 0);
     this.acceleration.set(0, 0, 0);
 
-};
-
-/**
- * Returns an extented version of Entity using prototypal inheritance.
- * This should be used for any custom entity creation.
- * @param {Object} extension An object containing what will be added to the extended entity prototype.
- */
-Entity.prototype.extend = function(extensions) {
-    var Extended = extensions.constructor;
-    Extended.prototype = Object.create(Entity.prototype);
-    for (var key in extensions) {
-        Extended.prototype[key] = extensions[key];
-    }
-    return Extended;
 };
 
 /**

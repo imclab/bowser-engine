@@ -8,11 +8,6 @@ var Entity = require('../entity');
  * @param {Boolean} dynamic Entity will be moving.
  * @returns {Entity}
  */
-var Entity3D = function(parameters) {
-    "use strict";
-    Entity.call(this, parameters);
-};
-
-Entity3D.prototype = Object.create(Entity.prototype);
+var Entity3D = Entity.extend();
 
 module.exports = Entity3D;

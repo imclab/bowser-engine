@@ -1,7 +1,7 @@
 {
     "name": "bowser-engine",
     "version": "0.0.1",
-    "description": "A WebGL game engine based on three.js.",
+    "description": "A WebGL game engine based on three.js",
     "main": "index.js",
     "dependencies": {
         "pathfinding": "0.4.1",
@@ -10,7 +10,7 @@
     },
     "devDependencies": {},
     "scripts": {
-        "document": "doxx --source src --target docs"
+        "docs": "doxx --source src --target docs"
     },
     "repository": {
         "type": "git",
