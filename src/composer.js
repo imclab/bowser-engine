@@ -1,5 +1,6 @@
 // Imports.
 var THREE = require('three');
+var WATCHJS = require('watchjs');
 var CopyShader = require('./shader/copy');
 var ShaderPass = require('./pass/shader');
 var RenderPass = require('./pass/render');
@@ -11,6 +12,7 @@ var RenderPass = require('./pass/render');
  */
 var Composer = function(game) {
     "use strict";
+    var that = this;
 
     // Inititalizing properties.
     this.game = game;
@@ -38,6 +40,14 @@ var Composer = function(game) {
         this.renderTarget1 = new THREE.WebGLRenderTarget(width, height, this.renderTargetParameters);
     }
 
+    // Add watchers.
+    WATCHJS.watch(that, 'output', function() {
+        console.log('setting the pass');
+        for (var key in that.passes) {
+            that.passes[key].renderToScreen = parseInt(that.output, 10) === parseInt(key, 10) ? true : false;
+        }
+    });
+
     this.renderTarget2 = this.renderTarget1.clone();
     this.writeBuffer = this.renderTarget1;
     this.readBuffer = this.renderTarget2;
@@ -49,19 +59,6 @@ var Composer = function(game) {
 };
 
 Composer.prototype = {
-
-    /**
-     * Sets the pass that is going to be output to the renderer.
-     * @param {Number} output
-     * @returns {undefined}
-     */
-    setOutput: function(output) {
-        if (this.output) {
-            this.passes[this.output].renderToScreen = false;
-        }
-        this.output = output;
-        this.passes[output].renderToScreen = true;
-    },
 
     /**
      * Sets the resolution of the composer by resetting the THREE.WebGLRenderTarget.
@@ -112,7 +109,7 @@ Composer.prototype = {
             copyPass = false;
         }
 
-        this.setOutput(this.passes.length - 1);
+        this.output = this.passes.length - 1;
     },
 
     swapBuffers: function() {
