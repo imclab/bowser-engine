@@ -15,6 +15,8 @@ var Misc = require('../misc');
 var Tile = function(parameters) {
     "use strict";
     Entity.call(this, parameters);
+    // Set to true once the map data is loaded.
+    this.loaded = false;
     this.mapData = {};
     // Store a copy of the original map data so we can restore later.
     this.mapDataOriginal = {};
@@ -321,6 +323,7 @@ Tile.prototype.setMapData = function(mapData) {
             }
         }
     }
+    this.loaded = true;
 };
 
 /*
