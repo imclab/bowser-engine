@@ -3,6 +3,7 @@ var THREE = require('three');
 var WATCHJS = require('watchjs');
 var Collider = require('./collider');
 var Sound = require('./sound');
+var Scene3D = require('./3d/scene');
 
 /**
  * The entity object represent the idea of an idependant self-mangage object. For instance a character or a vehicle.
@@ -135,9 +136,13 @@ Entity.prototype.add = function(object) {
 
     // This is an optimization to make sure the THREE objects we add to entity do not update their matrix.
     if(!(object instanceof Entity)) {
-        if(!(object instanceof Collider) && !(object instanceof Sound)) {
-            object.castShadow = true;
-            object.receiveShadow = true;
+
+        // If there is no light in the scene the receive shadow causes a crash. Therefore we check for Scene3D since it has lights by default.
+        if (this.scene instanceof Scene3D) {
+            if(!(object instanceof Collider) && !(object instanceof Sound)) {
+                object.castShadow = true;
+                object.receiveShadow = true;
+            }
         }
         if (object.updateMatrix) {
             object.matrixAutoUpdate = false;
