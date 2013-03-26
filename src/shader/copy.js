@@ -1,32 +1,33 @@
 /**
+ * The copy shader creates a texture pass out of the underlaying layers.
  * @author alteredq
  */
-var That = {
+var CopyShader = {
 
 	uniforms: {
-		"texture": { type: "t", value: null },
-		"opacity":  { type: "f", value: 1.0 }
+		'texture': { type: 't', value: null },
+		'opacity':  { type: 'f', value: 1.0 }
 	},
 
 	vertexShader: [
-		"varying vec2 vUv;",
-		"void main() {",
-			"vUv = uv;",
-			"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
-		"}"
-	].join("\n"),
+		'varying vec2 vUv;',
+		'void main() {',
+			'vUv = uv;',
+			'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+		'}'
+	].join('\n'),
 
 	fragmentShader: [
-		"uniform float opacity;",
-		"uniform sampler2D texture;",
-		"varying vec2 vUv;",
-		"void main() {",
-			"vec4 texel = texture2D( texture, vUv );",
-			"gl_FragColor = opacity * texel;",
-		"}"
-	].join("\n")
+		'uniform float opacity;',
+		'uniform sampler2D texture;',
+		'varying vec2 vUv;',
+		'void main() {',
+			'vec4 texel = texture2D( texture, vUv );',
+			'gl_FragColor = opacity * texel;',
+		'}'
+	].join('\n')
 
 };
 
 // Exports.
-module.exports = That;
+module.exports = CopyShader;
