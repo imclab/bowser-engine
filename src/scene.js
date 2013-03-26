@@ -12,7 +12,7 @@ var Scene = function(parameters) {
 
     // Initializing parameters.
     parameters = parameters ? parameters : {};
-    this.key = parameters.key;
+    this.key = parameters.key ? parameters.key : this.id;
     this.entities = {};
     this.sounds = {};
     this.colliders = [];
@@ -61,6 +61,20 @@ Scene.prototype.update = function() {
 
     // Launching custom update.
     this.onUpdate();
+};
+
+/**
+ * Updates the scene and it's children
+ * @returns {undefined}
+ */
+Scene.prototype.init = function() {
+
+    // Init all children with an init method.
+    for(var key in this.children) {
+        if(this.children[key].init instanceof Function) {
+            this.children[key].init();
+        }
+    }
 };
 
 /**

@@ -42,7 +42,6 @@ var Composer = function(game) {
 
     // Add watchers.
     WATCHJS.watch(that, 'output', function() {
-        console.log('setting the pass');
         for (var key in that.passes) {
             that.passes[key].renderToScreen = parseInt(that.output, 10) === parseInt(key, 10) ? true : false;
         }

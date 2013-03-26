@@ -42,6 +42,36 @@ var Scene3D = function(parameters) {
 	this.onConstruction();
 };
 
+/**
+ * Returns an extented version of Entity using prototypal inheritance.
+ * This should be used for any custom entity creation.
+ * @param {Object} extension An object containing what will be added to the extended entity prototype.
+ */
+Scene3D.extend = function(extensions) {
+    var that = this;
+    extensions = extensions instanceof Object ? extensions : {};
+
+    function Class () {
+        if (extensions.construct) {
+            extensions.construct.apply(this, arguments);
+        } else {
+            that.apply(this, arguments);
+        }
+    }
+
+    Class.prototype = Object.create(this.prototype);
+
+    for (var key in extensions) {
+        if (key !== 'construct') {
+            Class.prototype[key] = extensions[key];
+        }
+    }
+
+    Class.prototype.constructor = Class;
+    Class.extend = arguments.callee;
+    return Class;
+};
+
 Scene3D.prototype = Object.create(Scene.prototype);
 
 /**

@@ -2,6 +2,7 @@
 var THREE = require('three');
 var WATCHJS = require('watchjs');
 var Sampler = require('./sampler');
+var Base = require('./base');
 var Keyboard = require('./keyboard');
 var Mouse = require('./mouse');
 var Composer = require('./composer');
@@ -16,7 +17,12 @@ var Scene2D = require('./2d/scene');
  * @constructor
  */
 var Game = function(parameters) {
-	var that = this;
+
+	// Defining variables.
+	var key, that = this;
+
+	// Calling super
+	Base.call(this);
 
 	// Adding stuff to the head of the page.
 	var link = document.createElement('link');
@@ -27,11 +33,11 @@ var Game = function(parameters) {
 
 	// Initializing parameters.
 	parameters = parameters ? parameters : {};
-	this.name = parameters.name ? parameters.name : 'game';
+	this.key = parameters.key ? parameters.key : 'game';
 
 	// Creating the game div.
 	this.div = document.createElement('div');
-	this.div.id = this.name;
+	this.div.id = this.key;
 	this.div.className = 'game';
 	this.div.style.position = 'relative';
 	this.div.style.width = '100%';
@@ -80,34 +86,29 @@ var Game = function(parameters) {
 		that.renderer.setClearColorHex(that.clearColor, 1);
 	});
 
-	// Creating the events object.
-	this.events = parameters.events !== undefined ? parameters.events : {};
-	this.events.onBlur = this.events.onBlur ? this.events.onBlur : function() {};
-	this.events.onFocus = this.events.onFocus ? this.events.onFocus : function() {};
-	this.events.onResize = this.events.onResize ? this.events.onResize : function() {};
-	this.events.onPause = this.events.onPause ? this.events.onPause : function() {
-		this.stop();
-	};
-	this.events.onResume = this.events.onResume ? this.events.onResume : function() {
-		this.run();
-	};
-
 	// Initializing parameters.
-	this.clearColor = parameters.clearColor ? parameters.clearColor : 0x000000;
+	this.clearColor = parameters.clearColor ? parameters.clearColor : 0x0432ff;
 	this.resolution = parameters.resolution ? parameters.resolution : new Resolution();
 
 	// Adding Additional Watchers.
 	WATCHJS.watch(that, "resolution", function() {
-		that.updateResolution();
-		that.events.onResize();
+		that.onResize();
 	});
 
 	// Adding provided scenes.
 	var scenes = parameters.scenes ? parameters.scenes : [];
-	for (var key in parameters.scenes) {
+	for (key in scenes) {
 		this.add(scenes[key]);
 	}
+
+	// Adding extra passes.
+	var passes = parameters.passes ? parameters.passes : [];
+	for (key in passes) {
+		this.composer.add(passes[key]);
+	}
 };
+
+Game.prototype = Object.create(Base.prototype);
 
 Game.prototype.start = function(container, debug) {
 	this.debug = debug ? debug : false;
@@ -130,11 +131,11 @@ Game.prototype.stop = function() {
 };
 
 Game.prototype.pause = function() {
-	this.onPause();
+	this.stop();
 };
 
 Game.prototype.resume = function() {
-	this.onResume();
+	this.run();
 };
 
 Game.prototype.increment = function() {
@@ -172,7 +173,7 @@ Game.prototype.show = function() {
 	if (this.container && !this.div.parentElement) {
 		this.container.appendChild(this.div);
 		this.connectHandlers();
-		this.updateResolution();
+		this.onResize();
 		this.focus();
 	}
 };
@@ -241,21 +242,19 @@ Game.prototype.connectHandlers = function() {
 	var that = this;
 
 	this.handlers.windowResize = function(event) {
-		that.updateResolution();
-		that.events.onResize();
+		that.onResize();
 	};
 
 	this.handlers.documentFullScreen = function(event) {
-		that.updateResolution();
-		that.events.onResize();
+		that.onResize();
 	};
 
 	this.handlers.canvasBlur = function(event) {
-		that.events.onBlur();
+		that.onBlur();
 	};
 
 	this.handlers.canvasFocus = function(event) {
-		that.events.onFocus();
+		that.onFocus();
 	};
 
 	this.handlers.mouseMove = function(event) {
@@ -316,7 +315,7 @@ Game.prototype.disconnectHandlers = function() {
  * @method
  * @returns {undefined}
  */
-Game.prototype.updateResolution = function() {
+Game.prototype.onResize = function() {
 	if (this.visible) {
 		var key;
 		var containerResolution = new Resolution({
@@ -395,6 +394,11 @@ Game.prototype.updateResolution = function() {
 Game.prototype.add = function(object) {
 	object.game = this;
 
+    // Initialize the object.
+    if (object.init instanceof Function) {
+        object.init();
+    }
+
 	if (object instanceof Scene) {
 		this.scenes[object.key] = object;
 		this.composer.add(object.pass);
@@ -403,14 +407,32 @@ Game.prototype.add = function(object) {
 };
 
 /**
- * Focuses on the canvas element.
+ * Set focus on the canvas.
  * @method
  * @returns {undefined}
  */
 Game.prototype.focus = function() {
 	this.canvas.focus();
+	this.onFocus();
 };
 
+/**
+ * Triggered when the focus is set on the canvas.
+ * @return {[type]} [description]
+ */
+Game.prototype.onFocus = function() {};
+
+/**
+ * Triggered when the canvas looses focus.
+ * @return {[type]} [description]
+ */
+Game.prototype.onBlur = function() {};
+
+/**
+ * Logs message only in when debug mode is true.
+ * @param  {[type]} message [description]
+ * @return {[type]}         [description]
+ */
 Game.prototype.log = function(message) {
 	if (this.debug) {
 		console.log(message);

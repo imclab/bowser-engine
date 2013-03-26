@@ -13,10 +13,10 @@ var Sound = function(parameters) {
 
     // Treating parameters
     parameters = parameters ? parameters : {};
-    this.key = parameters.key;
+    this.key = parameters.key ? parameters.key : this.id;
     this.entity = undefined;
     this.scene = undefined;
-    this.radius = parameters.radius !== undefined ? parameters.radius : 5;
+    this.radius = parameters.radius !== undefined ? parameters.radius : 10;
 
     // Initializing the super object.
     THREE.Mesh.call(this, new THREE.SphereGeometry(this.radius), new THREE.MeshBasicMaterial({
@@ -32,52 +32,27 @@ var Sound = function(parameters) {
 
         // Adding watchers.        
         WATCHJS.watch(that, 'volume', function() {
-            that.gain.gain.value = that.volume;
+            if (that.gain) {
+                that.gain.gain.value = that.volume;
+            }
         });
 
         WATCHJS.watch(that, 'attenuation', function() {
-            if (this.panner) {
+            if (that.panner) {
                 that.panner.rolloffFactor = that.attenuation;
             }
         });
 
         // Finishing to process parameters.
         this.size = parameters.size ? parameters.size : 1;
-        this.sampler = parameters.sampler;
-        this.analyser = this.sampler.context.createAnalyser();
-        this.gain = this.sampler.context.createGainNode();
         this.position = parameters.position ? parameters.position : this.position;
-        this.volume = parameters.volume ? parameters.volume : 1;
+        this.panner = parameters.panner ? parameters.panner : false;
         this.doppler = parameters.doppler ? parameters.doppler : false;
+        this.autoplay = parameters.autoplay ? parameters.autoplay : false;
         this.url = parameters.url;
-        this.position = parameters.position ? parameters.position : this.position;
         this.buffer = undefined;
-
-        var request = new XMLHttpRequest();
-        request.open('GET', this.url, true);
-        request.responseType = 'arraybuffer';
-
-        request.onload = function() {
-            that.sampler.context.decodeAudioData(request.response, function(buffer) {
-                that.buffer = buffer;
-                if(parameters.play) {
-                    that.play();
-                }
-            });
-        };
-
-        if(parameters.panner) {
-            this.panner = this.sampler.context.createPanner();
-            this.panner.setPosition(this.position.x, this.position.y, this.position.z);
-            this.gain.connect(this.panner);
-            this.panner.connect(this.sampler.gain);
-        } else {
-            this.gain.connect(this.sampler.gain);
-        }
-
+        this.volume = parameters.volume ? parameters.volume : 1;
         this.attenuation = parameters.attenuation ? parameters.attenuation : 1;
-
-        request.send();
     }
 };
 
@@ -85,7 +60,7 @@ Sound.prototype = Object.create(THREE.Mesh.prototype);
 
 Sound.prototype.play = function() {
     if (webkitAudioContext) {
-        if(this.buffer) {
+        if(this.buffer && this.sampler) {
             this.source = this.sampler.context.createBufferSource();
             this.source.buffer = this.buffer;
             this.source.connect(this.gain);
@@ -115,15 +90,53 @@ Sound.prototype.add = function(object) {
 };
 
 Sound.prototype.init = function() {
+    var that = this;
 
-    // Registerin in the entity.
+    // Registering in the entity.
     if (this.entity) {
         this.entity.sounds[this.key] = this;
+        if (this.entity.scene && this.entity.scene.game) {
+            this.sampler = this.entity.scene.game.sampler;
+        }
     }
 
     // Registering in the scene.
     if (this.scene) {
         this.scene.sounds[this.key] = this;
+        if (this.scene.game) {
+            this.sampler = this.scene.game.sampler;
+        }
+    }
+
+    // Basically we can only load and attach the sound when the sound object is connected to a game.
+    if (this.sampler && !(this.analyser)) {
+        this.analyser = this.sampler.context.createAnalyser();
+        this.gain = this.sampler.context.createGainNode();
+        this.gain.gain.value = this.volume;
+
+        if(this.panner) {
+            this.panner = this.sampler.context.createPanner();
+            this.panner.setPosition(this.position.x, this.position.y, this.position.z);
+            that.panner.rolloffFactor = that.attenuation;
+            this.gain.connect(this.panner);
+            this.panner.connect(this.sampler.gain);
+        } else {
+            this.gain.connect(this.sampler.gain);
+        }
+
+        var request = new XMLHttpRequest();
+        request.open('GET', this.url, true);
+        request.responseType = 'arraybuffer';
+
+        request.onload = function() {
+            that.sampler.context.decodeAudioData(request.response, function(buffer) {
+                that.buffer = buffer;
+                if(that.autoplay) {
+                    that.play();
+                }
+            });
+        };
+        request.send();
     }
 };
 

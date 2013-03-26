@@ -75,7 +75,9 @@ var Misc = {
         request.open('GET', url);
         request.onload = function() {
             var json = JSON.parse(this.responseText);
-            callback(json);
+            if (callback) {
+                callback(json);
+            }
         };
         request.send();
     }

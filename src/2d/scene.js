@@ -47,6 +47,7 @@ Scene2D.prototype.setResolution = function(width, height) {
         scale = 1;
     }
 
+    // This is just there from before I had created Entity2D.
     for (var key in this.children) {
         if (this.children[key] instanceof THREE.Sprite) {
             this.children[key].scale.set(this.children[key].texture.image.width * scale, this.children[key].texture.image.height * scale, 1.0);

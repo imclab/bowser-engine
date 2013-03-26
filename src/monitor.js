@@ -25,7 +25,7 @@ var Monitor = function(game) {
 	this.div.style.borderRadius = '3px';
 	this.div.style.fontFamily = 'Inconsolata, Sans-Serif';
 	this.div.style.fontSize = '14px';
-	this.div.innerHTML = '<div style="margin-bottom: 8px; color:white; font-size:22px;">' + this.game.name.toUpperCase() + '</div>';
+	this.div.innerHTML = '<div style="margin-bottom: 8px; color:white; font-size:22px;">' + this.game.key.toUpperCase() + '</div>';
 
 	this.visible = false;
 	this.items = {};

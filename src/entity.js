@@ -1,8 +1,7 @@
 // Imports.
 var THREE = require('three');
 var WATCHJS = require('watchjs');
-var Collider = require('./collider');
-var Sound = require('./sound');
+var Action = require('./action');
 var Scene3D = require('./3d/scene');
 
 /**
@@ -67,13 +66,14 @@ var Entity = function(parameters) {
         this.position.set(parameters.position.x, parameters.position.y, parameters.position.z);
     }
 
-    this.key = parameters.key;
+    this.key = parameters.key ? parameters.key : this.id;
     this.visible = parameters.visible ? parameters.visible : true;
     this.sounds = {};
     this.entities = {};
     this.entity = undefined;
     this.scene = undefined;
     this.colliders = {};
+    this.actions = {};
     this.collisions = [];
     this.recursion = 0;
     this.onCollision = parameters.onCollision ? parameters.onCollision : function() {};
@@ -112,14 +112,28 @@ var Entity = function(parameters) {
  * @param {Object} extension An object containing what will be added to the extended entity prototype.
  */
 Entity.extend = function(extensions) {
+    var that = this;
     extensions = extensions instanceof Object ? extensions : {};
-    var Extended = extensions._constructor instanceof Function ? extensions._constructor : this;
-    Extended.prototype = Object.create(this.prototype);
-    for (var key in extensions) {
-        Extended.prototype[key] = extensions[key];
+
+    function Class () {
+        if (extensions.construct) {
+            extensions.construct.apply(this, arguments);
+        } else {
+            that.apply(this, arguments);
+        }
     }
-    Extended.extend = this.extend;
-    return Extended;
+
+    Class.prototype = Object.create(this.prototype);
+
+    for (var key in extensions) {
+        if (key !== 'construct') {
+            Class.prototype[key] = extensions[key];
+        }
+    }
+
+    Class.prototype.constructor = Class;
+    Class.extend = arguments.callee;
+    return Class;
 };
 
 Entity.prototype = Object.create(THREE.Object3D.prototype);
@@ -136,18 +150,15 @@ Entity.prototype.add = function(object) {
 
     // This is an optimization to make sure the THREE objects we add to entity do not update their matrix.
     if(!(object instanceof Entity)) {
-
-        // If there is no light in the scene the receive shadow causes a crash. Therefore we check for Scene3D since it has lights by default.
-        if (this.scene instanceof Scene3D) {
-            if(!(object instanceof Collider) && !(object instanceof Sound)) {
-                object.castShadow = true;
-                object.receiveShadow = true;
-            }
-        }
         if (object.updateMatrix) {
             object.matrixAutoUpdate = false;
             object.updateMatrix();
         }
+    }
+
+    // Handle for actions.
+    if(object instanceof Action) {
+        this.actions[object.key] = object;
     }
 
     THREE.Object3D.prototype.add.call(this, object);
@@ -181,6 +192,12 @@ Entity.prototype.init = function() {
  * Updates the entity.
  */
 Entity.prototype.update = function() {
+    var key;
+
+    // Updating actions.
+    for (key in this.actions) {
+        this.actions[key].update();
+    }
 
     // Storing position before any change happens.
     var worldPosition = this.buffer.zeroVector.clone().getPositionFromMatrix(this.matrixWorld);
@@ -243,7 +260,7 @@ Entity.prototype.update = function() {
     this.onPostUpdate();
 
     // Updating the children.
-    for(var key in this.children) {
+    for(key in this.children) {
         if(this.children[key].update instanceof Function) {
             this.children[key].update();
         }

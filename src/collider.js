@@ -21,7 +21,7 @@ var Collider = function(parameters) {
 
     // Processing optional arguments.
     parameters = parameters instanceof Object ? parameters : {};
-    this.key = parameters.key;
+    this.key = parameters.key ? parameters.key : this.id;
     this.offensive = parameters.offensive !== undefined ? parameters.offensive : false;
     this.emit = parameters.emit !== undefined ? parameters.emit : true;
     this.entity = undefined;
