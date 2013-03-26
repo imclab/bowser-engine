@@ -1,6 +1,6 @@
 var THREE = require('three');
-var Entity = require('../entity');
-var Misc = require('../misc');
+var Entity = require('./entity');
+var Misc = require('./misc');
 
 /*
  * @constructor
@@ -12,10 +12,8 @@ var Misc = require('../misc');
  * @param: {imageUrlReplace} The text in imageUrlFind will be replaced by this text.
  * @returns {TileMap} A tile map instance.
  */
-var Tile = function(parameters) {
+var TileMap = function(parameters) {
     "use strict";
-
-    console.warn('Tile is deprecated, please use TileMap instead.');
 
     Entity.call(this, parameters);
     // Set to true once the map data is loaded.
@@ -30,7 +28,7 @@ var Tile = function(parameters) {
     /* onPropFound(properties, propType, tile)
      * Generic callback if the more specific callbacks were not found.
      * @param {properties} A list of the found properties.
-     * @param {propType} This can be used to detect what type of property this is. See Tile.Prop...
+     * @param {propType} This can be used to detect what type of property this is. See TileMap.Prop...
      * @param {tile} The BOWSER.Tile object the map parameters belong to.
      */
     this.onPropFound = parameters.onPropFound ? parameters.onPropFound : undefined;
@@ -86,17 +84,17 @@ var Tile = function(parameters) {
     }
 };
 
-Tile.prototype = Object.create(Entity.prototype);
+TileMap.prototype = Object.create(Entity.prototype);
 // Property Identifier enums.
-Tile.prototype.PropMap = 1;
-Tile.prototype.PropLayer = 2;
-Tile.prototype.PropTileSet = 3;
-Tile.prototype.PropTile = 4;
+TileMap.prototype.PropMap = 1;
+TileMap.prototype.PropLayer = 2;
+TileMap.prototype.PropTileSet = 3;
+TileMap.prototype.PropTile = 4;
 
 /*
  * Loads the geometry. All layers are created.
  */
-Tile.prototype.createGeometry = function() {
+TileMap.prototype.createGeometry = function() {
     this.geometries = [];
     // Create the layers from the back layer to the front
     for (var i = this.mapData.layers.length - 1; i >= 0; i--) {
@@ -137,7 +135,7 @@ Tile.prototype.createGeometry = function() {
  *      @param {original} Optional, If true return the orginal gid at the last time setMapData was called.
  * @return {int} The gid currently assigned to the tile'
  */
-Tile.prototype.gidForTileAndLayer = function(parameters) {
+TileMap.prototype.gidForTileAndLayer = function(parameters) {
     var layerId = this.layerId(parameters.layerId);
     var tileId = parameters.tileId;
     var layer;
@@ -158,7 +156,7 @@ Tile.prototype.gidForTileAndLayer = function(parameters) {
  *      @param {original} Optional, If true return the orginal gid at the last time setMapData was called.
  * @returns {Array} An array of gids for all tiles in this layer.
  */
-Tile.prototype.layerData = function(parameters) {
+TileMap.prototype.layerData = function(parameters) {
     var layerId = this.layerId(parameters.layerId);
     if (parameters.original && parameters.original === true) {
         return this.mapDataOriginal.layers[layerId].data;
@@ -170,7 +168,7 @@ Tile.prototype.layerData = function(parameters) {
 /*
  * @return {int} || {false} If the layer was found return its index, otherwise return false
  */
-Tile.prototype.layerId = function(layerName) {
+TileMap.prototype.layerId = function(layerName) {
     var found = false;
     if (typeof layerName === 'number') {
         return layerName;
@@ -191,7 +189,7 @@ Tile.prototype.layerId = function(layerName) {
  *      @param {original} Optional, If true return the orginal gid at the last time setMapData was called.
  * @returns {float} The opacity of the layer.
  */
-Tile.prototype.layerOpacity = function(parameters) {
+TileMap.prototype.layerOpacity = function(parameters) {
     var layerId = this.layerId(parameters.layerId);
     if (parameters.original && parameters.original === true) {
         return this.mapDataOriginal.layers[layerId].opacity;
@@ -203,7 +201,7 @@ Tile.prototype.layerOpacity = function(parameters) {
 /*
  * Load all images in the tileset and create textures to be used as tiles.
  */
-Tile.prototype.loadImages = function() {
+TileMap.prototype.loadImages = function() {
     for (var i = 0; i < this.mapData.tilesets.length; i++) {
         var url = this.mapData.tilesets[i].image;
         var name = this.mapData.tilesets[i].name;
@@ -218,7 +216,7 @@ Tile.prototype.loadImages = function() {
     }
 };
 
-Tile.prototype.mapToTile = function(position) {
+TileMap.prototype.mapToTile = function(position) {
     var ret = position.clone();
     ret.set(ret.x - this.offsetUnits.x, this.offsetUnits.y - ret.y, ret.z);
     return ret;
@@ -227,7 +225,7 @@ Tile.prototype.mapToTile = function(position) {
 /*
  * @returns {int} the proper material index used to map the proper image atlas to a face.
  */
-Tile.prototype.materialIdForGid = function(gid) {
+TileMap.prototype.materialIdForGid = function(gid) {
     var tilesets = this.mapData.tilesets;
     var ret = 0;
     for (var i = 0; i < tilesets.length; i++) {
@@ -246,7 +244,7 @@ Tile.prototype.materialIdForGid = function(gid) {
  * @param: {opacity} Normalized float value of opacity.
  * @returns {bool} If the layer was found.
  */
-Tile.prototype.setLayerOpacity = function(layerId, opacity) {
+TileMap.prototype.setLayerOpacity = function(layerId, opacity) {
     layerId = this.layerId(layerId);
     var materials = this.geometries[layerId].material.materials;
     for (var material in materials) {
@@ -260,7 +258,7 @@ Tile.prototype.setLayerOpacity = function(layerId, opacity) {
  * Process the given map data, load its tileset images, and create the geometry.
  * @param: {mapData} Dictonary of map data.
  */
-Tile.prototype.setMapData = function(mapData) {
+TileMap.prototype.setMapData = function(mapData) {
     this.mapData = mapData;
     // Duplicate the map data so you can compare the current state to the original.
     this.mapDataOriginal = JSON.parse(JSON.stringify(this.mapData));
@@ -336,7 +334,7 @@ Tile.prototype.setMapData = function(mapData) {
  * @param {layerId} The layer name or number to apply the gid.
  * Note: If a tile gid requires changing tileset you will need to re-create the geometry.
  */
-Tile.prototype.setTileGid = function(gid, tileId, layerId) {
+TileMap.prototype.setTileGid = function(gid, tileId, layerId) {
     layerId = this.layerId(layerId);
     var layer = this.mapData.layers[layerId];
     if (layer.type === 'tilelayer') {
@@ -359,7 +357,7 @@ Tile.prototype.setTileGid = function(gid, tileId, layerId) {
  * Update the uv's for all layers of the tile map.
  * Note: If a tile gid requires changing tileset you will need to re-create the geometry.
  */
-Tile.prototype.updateMapUVs = function() {
+TileMap.prototype.updateMapUVs = function() {
     // Make each tile point to the correct image and update the uv cordinates
     for (var i = 0; i < this.geometries.length; i++) {
         var layer = this.mapData.layers[i];
@@ -392,7 +390,7 @@ Tile.prototype.updateMapUVs = function() {
  * @param: {gid} The Global ID to generate uv cordinates for.
  * @returns {array} An array of 4 THREE.Vector2's.
  */
-Tile.prototype.uvsForGid = function(gid) {
+TileMap.prototype.uvsForGid = function(gid) {
     var ret = [new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2()];
     // This tile has no id set treat it as empty
     if (gid === 0) {
@@ -434,4 +432,4 @@ Tile.prototype.uvsForGid = function(gid) {
 };
 
 // Exports.
-module.exports = Tile;
+module.exports = TileMap;
