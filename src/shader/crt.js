@@ -30,21 +30,68 @@ var CRTShader = function(parameters) {
             type: 'v2',
             value: textureSize
         },
-        'darkness': {
+
+        // Gamma of simulated CRT.
+        'CRTgamma': {
             type: 'f',
-            value: 1.0
+            value: parameters.crtGamma !== undefined ? parameters.crtGamma : 2.4
         },
-        'offset': {
+
+        // Gamma of display monitor. Typically 2.2 is correct.
+        'monitorgamma': {
             type: 'f',
-            value: 1.0
+            value: parameters.monitorGamma !== undefined ? parameters.monitorGamma : 2.2
+        },
+
+        // Overscan amount. 1.02 for 2 percents.
+        'overscan': {
+            type: 'v2',
+            value: parameters.overscan instanceof THREE.Vector2 ? parameters.overscan : new THREE.Vector2(1.0, 1.0)
+        },
+
+        // Aspect ratio.
+        'aspect': {
+            type: 'v2',
+            value: parameters.aspectRatio instanceof THREE.Vector2 ? parameters.aspectRatio : new THREE.Vector2(1.0, 1.0)
+        },
+
+        // Lengths are measured in units of (approximately) the width of the monitor simulated distance from viewer to monitor.
+        'd': {
+            type: 'f',
+            value: parameters.distance !== undefined ? parameters.distance : 2.0
+        },
+
+        // Radius of curvature.
+        'R': {
+            type: 'f',
+            value: parameters.curvature !== undefined ? parameters.curvature : 4.0
+        },
+
+        // Tilt angle in radians. Behavior might be a bit wrong if both components are non-zero.
+        'angle': {
+            type: 'v2',
+            value: parameters.angle instanceof THREE.Vector2 ? parameters.angle : new THREE.Vector2(0.0, 0.0)
+        },
+
+        // Size of the round corners.
+        'borderRadius': {
+            type: 'f',
+            value: parameters.borderRadius !== undefined ? parameters.borderRadius : 0.01
+        },
+
+        // Decrease if borders are too aliased.
+        'borderSharpness': {
+            type: 'f',
+            value: parameters.borderSharpness !== undefined ? parameters.borderSharpness : 250.0
         }
+
     };
 
     this.vertexShader = [
         '/*  CRT Shader',
         ' *',
         ' *  Copyright (C) 2012-2013 Douglas Lassance',
-        ' *  Port of the amazing work of cgwg, Themaister and DOLLS.',
+        ' *  Port of the amazing work of cgwg, Themaister and DOLLS for SDLMAME to three.js.',
         ' *',
         ' *  This program is free software; you can redistribute it and/or modify it',
         ' *  under the terms of the GNU General Public License as published by the Free',
@@ -53,15 +100,16 @@ var CRTShader = function(parameters) {
         ' */',
 
         'uniform vec2 textureSize;',
+        'uniform float CRTgamma;',
+        'uniform float monitorgamma;',
+        'uniform vec2 overscan;',
+        'uniform vec2 aspect;',
+        'uniform float d;',
+        'uniform float R;',
+        'uniform vec2 angle;',
+        'uniform float borderRadius;',
+        'uniform float borderSharpness;',
 
-        'varying float CRTgamma;',
-        'varying float monitorgamma;',
-        'varying vec2 overscan;',
-        'varying vec2 aspect;',
-        'varying float d;',
-        'varying float R;',
-        'varying float borderRadius;',
-        'varying float borderSharpness;',
         'varying vec3 stretch;',
         'varying vec2 sinangle;',
         'varying vec2 cosangle;',
@@ -112,31 +160,31 @@ var CRTShader = function(parameters) {
         'void main() {',
 
             '// Gamma of simulated CRT',
-            'CRTgamma = 2.4;',
+            '//CRTgamma = 2.4;',
 
             '// Gamma of display monitor. Typically 2.2 is correct.',
-            'monitorgamma = 2.2;',
+            '//monitorgamma = 2.2;',
 
             '// Overscan amount. 1.02 for 2 percents.',
-            'overscan = vec2(1.00,1.00);',
+            '//overscan = vec2(1.00,1.00);',
 
             '// Aspect ratio.',
-            'aspect = vec2(1.0, 1.0);',
+            '//aspect = vec2(1.0, 1.0);',
 
             '// Lengths are measured in units of (approximately) the width of the monitor simulated distance from viewer to monitor.',
-            'd = 2.0;',
+            '//d = 2.0;',
 
             '// Radius of curvature',
-            'R = 4.0;',
+            '//R = 4.0;',
 
             '// Tilt angle in radians. Behavior might be a bit wrong if both components are non-zero.',
-            'const vec2 angle = vec2(0.0,0.0);',
+            '//const vec2 angle = vec2(0.0,0.0);',
 
             '// Size of the round corners.',
-            'borderRadius = 0.01;',
+            '//borderRadius = 0.01;',
 
             '// Decrease if borders are too aliased.',
-            'borderSharpness = 250.0;',
+            '//borderSharpness = 250.0;',
 
             '// Do the standard vertex processing.',
             'gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
@@ -158,7 +206,7 @@ var CRTShader = function(parameters) {
         '/*  CRT shader',
         ' *',
         ' *  Copyright (C) 2012-2013 Douglas Lassance',
-        ' *  Port of the amazing work of cgwg, Themaister and DOLLS.',
+        ' *  Port of the amazing work of cgwg, Themaister and DOLLS for SDLMAME to three.js.',
         ' *',
         ' *  This program is free software; you can redistribute it and/or modify it',
         ' *  under the terms of the GNU General Public License as published by the Free',
@@ -168,17 +216,18 @@ var CRTShader = function(parameters) {
 
         'uniform sampler2D texture;',
         'uniform vec2 textureSize;',
+        'uniform float CRTgamma;',
+        'uniform float monitorgamma;',
+        'uniform vec2 overscan;',
+        'uniform vec2 aspect;',
+        'uniform float d;',
+        'uniform float R;',
+        'uniform vec2 angle;',
+        'uniform float borderRadius;',
+        'uniform float borderSharpness;',
 
         'varying vec2 uvs;',
         'varying vec2 one;',
-        'varying float CRTgamma;',
-        'varying float monitorgamma;',
-        'varying vec2 overscan;',
-        'varying vec2 aspect;',
-        'varying float d;',
-        'varying float R;',
-        'varying float borderRadius;',
-        'varying float borderSharpness;',
         'varying vec3 stretch;',
         'varying vec2 sinangle;',
         'varying vec2 cosangle;',
