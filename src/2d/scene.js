@@ -1,6 +1,7 @@
 // Imports.
 var THREE = require('three');
 var Scene = require('../scene');
+var Entity2D = require('./entity');
 var RenderPass = require('../pass/render');
 
 /**
@@ -36,21 +37,22 @@ Scene2D.prototype = Object.create(Scene.prototype);
  * @param {Number} height The height of the scene.
  */
 Scene2D.prototype.setResolution = function(width, height) {
+    var key, scale;
+
     this.camera.right = width;
     this.camera.top = height;
     this.camera.updateProjectionMatrix();
 
-    var scale;
     if (this.game.resolution.isValid() && this.game.resolution.adaptive) {
-        scale = this.game.div.width() / this.game.resolution.width;
+        scale = this.game.div.offsetWidth / this.game.resolution.width;
     } else {
-        scale = 1;
+        scale = 1.0;
     }
 
-    // This is just there from before I had created Entity2D.
-    for (var key in this.children) {
-        if (this.children[key] instanceof THREE.Sprite) {
-            this.children[key].scale.set(this.children[key].texture.image.width * scale, this.children[key].texture.image.height * scale, 1.0);
+    for (key in this.children) {
+        if (this.children[key] instanceof Entity2D) {
+            var image = this.children[key].sprite.material.map.image;
+            this.children[key].sprite.scale.set(image.width * scale, image.height * scale);
         }
     }
 };
