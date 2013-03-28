@@ -334,14 +334,14 @@ Game.prototype.onResize = function() {
 					divResolution.height = containerResolution.height;
 					this.div.style.width = divResolution.width.toString() + 'px';
 					this.div.style.height = '100%';
-					this.div.style.top = '0px';
+					this.div.style.top = '0';
 				} else {
 					divResolution.width = containerResolution.width;
 					divResolution.height = containerResolution.width / imageRatio;
 					this.div.style.width = '100%';
 					this.div.style.height = divResolution.height.toString() + 'px';
 					if (document.webkitIsFullScreen) {
-						this.div.style.top = '0px';
+						this.div.style.top = '0';
 					} else {
 						this.div.style.top = Math.round((containerResolution.height - divResolution.height) / 2);
 					}
@@ -373,7 +373,7 @@ Game.prototype.onResize = function() {
 		} else {
 
 			// We set the resolution of everything to match the container's resolution.
-			this.div.style.top = '0px';
+			this.div.style.top = '0';
 			this.div.style.width = '100%';
 			this.div.style.height = '100%';
 			this.renderer.setSize(containerResolution.width, containerResolution.height);
