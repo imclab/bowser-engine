@@ -10,7 +10,7 @@
     },
     "devDependencies": {},
     "scripts": {
-        "docs": "rm -r docs & doxx --source src --target docs"
+        "document": "rm -rf docs & doxx --source src --target docs"
     },
     "repository": {
         "type": "git",
