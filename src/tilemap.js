@@ -10,6 +10,14 @@ var Misc = require('./misc');
  * @param: {imageUrlFind} Find this text in any image urls and replace it with imageUrlReplace. This is useful
  *         because the image path provided by tiled most likely does not match the server url.
  * @param: {imageUrlReplace} The text in imageUrlFind will be replaced by this text.
+ * @param: {camera} If provided prevents the camera from moving outside of the tilemap
+ * @param: {cameraLockAxis} If a camera is provided, use the axis's with a value of 1. Two axis's should have a 
+ *         value of 1 and the third should have a value of 0. Defaults to THREE.Vector3(1, 1, 0)
+ * @param: {cameraUVtoAxis} An array of 2 strings. The first value represents the width, and the second represents 
+ *         the height. Defaults to ['x', 'y']
+camera
+cameraLockAxis
+cameraUVtoAxis
  * @returns {TileMap} A tile map instance.
  */
 var TileMap = function(parameters) {
@@ -71,6 +79,9 @@ var TileMap = function(parameters) {
     this.materials = [];
     // Each pice of geometry in this array is a renderable layer
     this.geometries = [];
+    this.camera = parameters.camera ? parameters.camera : undefined;
+    this.cameraLockAxis = parameters.cameraLockAxis ? parameters.cameraLockAxis : new THREE.Vector3(1, 1, 0);
+    this.cameraUVtoAxis = parameters.cameraUVtoAxis ? parameters.cameraUVtoAxis : ['x', 'y'];
     // used to map cordinates to tile maps.
     this.offsetUnits = new THREE.Vector2();
     // Load the map data
@@ -117,11 +128,8 @@ TileMap.prototype.createGeometry = function() {
         } else if (layer.type === 'objectgroup') {
             this.geometries[i] = new THREE.Geometry();
             this.geometries[i].position = new THREE.Vector3(0, 0, i * 0.5);
-            // run the onObjectFound callback for every object found
-            if (this.onObjectFound !== undefined) {
-                for (var id in layer.objects) {
-                    this.onObjectFound(layer.name, layer.objects[id], this);
-                }
+            for (var id in layer.objects) {
+                this.objectFound(layer.name, layer.objects[id]);
             }
         }
     }
@@ -238,6 +246,26 @@ TileMap.prototype.materialIdForGid = function(gid) {
     return ret;
 };
 
+TileMap.prototype.objectFound = function(layerName, objectData) {
+    switch (objectData.type) {
+        case "Camera":
+            if (this.camera) {
+                var objectWidth = objectData.width;
+                var objectHeight = objectData.height;
+                var position = new THREE.Vector3(objectData.x, objectData.y + objectHeight, 0);
+                position = tile.mapToTile(position);
+                this.camera.position.x = position.x;
+                this.camera.position.y = position.y;
+            }
+            break;
+        default:
+            // run the onObjectFound callback for every object found
+            if (this.onObjectFound !== undefined) {
+                this.onObjectFound(layerName, objectData, this);
+            }
+    }
+};
+
 /*
  * Given a layer name or layer id, set the opacity of the layer.
  * @param: {layerId} The name or index of the layer to change opacity.
@@ -350,6 +378,24 @@ TileMap.prototype.setTileGid = function(gid, tileId, layerId) {
         }
         layer.data[tileId] = gid;
         this.geometries[layerId].geometry.uvsNeedUpdate = true;
+    }
+};
+
+TileMap.prototype.update = function() {
+    Entity.prototype.update.call(this);
+    if (this.camera) {
+        var resolution = this.scene.game.resolution;
+        for (var i = 0; i < 2; i++) {
+            // Map the first value of cameraUVtoAxis to width and the second to height
+            var axis = this.cameraUVtoAxis[i];
+            var offsetAxis = ['x', 'y'][i];
+            var offset = resolution[['width', 'height'][i]];
+            if (this.camera.position[axis] < -this.offsetUnits[offsetAxis]) {
+                this.camera.position[axis] = -this.offsetUnits[offsetAxis];
+            } else if (this.camera.position[axis] + offset > this.offsetUnits[offsetAxis]) {
+                this.camera.position[axis] = this.offsetUnits[offsetAxis] - offset;
+            }
+        }
     }
 };
 
