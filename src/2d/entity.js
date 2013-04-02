@@ -55,9 +55,7 @@ var Entity2D = function(parameters) {
     this.offset = parameters.offset ? parameters.offset : new THREE.Vector3(0, 0, 0);
     this.coordinates = {};
     this.animations = {};
-    this.delta = 0;
-    this.animation = '';
-    this.sprite = parameters.sprite ? parameters.sprite : '';
+    this.animation = parameters.animation ? parameters.animation : '';
     this.flipped = false;
     this.frame = 0;
     this.filtering = parameters.filtering ? parameters.filtering : false;
@@ -75,10 +73,12 @@ Entity2D.prototype.onLoad = function() {
     // We set the material of the sprite.
     this.mesh.material.map = this.texture;
 
-    // We only set the sprite scale for the full image if it's not a sprite sheet.
-    if (Object.keys(this.coordinates).length) {
-        this.setSprite(this.sprite);
+    if (flipped) {
+        this.sprite.material.uvOffset.x = (frame.frame.x + frame.frame.w) / this.texture.image.width;
+    } else {
+        this.sprite.material.uvOffset.x = (frame.frame.x) / this.texture.image.width;
     }
+    this.sprite.material.uvOffset.y = 1 - (frame.frame.y + frame.frame.h) / this.texture.image.height;
 
     this.setSize();
 };
