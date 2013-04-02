@@ -14,12 +14,18 @@ var Entity2D = function(parameters) {
 
     // Loading the map.
     this.texture = THREE.ImageUtils.loadTexture(parameters.image, new THREE.UVMapping(), function() {
-        that.sprite.scale.set(that.texture.image.width, that.texture.image.height, 1.0);
+        if (parameters.coordinates) {
+            Misc.getJSON(parameters.coordinates, function(json) {
+                that.coordinates = json.frames;
+                that.onLoad();
+            });
+        } else {
+            that.onLoad();
+        }
     });
 
     // Creating sprite object.
-    this.sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: this.texture,
+    this.mesh = new THREE.Sprite(new THREE.SpriteMaterial({
         useScreenCoordinates: false,
         depthTest: false,
         scaleByViewport: true,
@@ -27,7 +33,7 @@ var Entity2D = function(parameters) {
     }));
 
     // Adding stuff to the entity.
-    this.add(this.sprite);
+    this.add(this.mesh);
 
     // Adding watchers.
     WATCHJS.watch(that, 'filtering', function() {
@@ -36,12 +42,12 @@ var Entity2D = function(parameters) {
     });
 
     WATCHJS.watch(that, 'offset', function() {
-        that.sprite.position = that.offset;
-        that.sprite.updateMatrix();
+        that.mesh.position = that.offset;
+        that.mesh.updateMatrix();
     });
 
     WATCHJS.watch(that, 'visible', function() {
-        that.sprite.visible = that.visible;
+        that.mesh.visible = that.visible;
     });
 
     // Treating parameters.
@@ -49,16 +55,12 @@ var Entity2D = function(parameters) {
     this.offset = parameters.offset ? parameters.offset : new THREE.Vector3(0, 0, 0);
     this.coordinates = {};
     this.animations = {};
+    this.delta = 0;
     this.animation = '';
+    this.sprite = parameters.sprite ? parameters.sprite : '';
     this.flipped = false;
-    this.frame = '';
+    this.frame = 0;
     this.filtering = parameters.filtering ? parameters.filtering : false;
-
-    if (parameters.coordinates) {
-        Misc.getJSON(parameters.coordinates, function(json) {
-            that.coordinates = json.frames;
-        });
-    }
 
     if (parameters.animations) {
         Misc.getJSON(parameters.animations, function(json) {
@@ -69,41 +71,80 @@ var Entity2D = function(parameters) {
 
 Entity2D.prototype = Object.create(Entity.prototype);
 
-Entity2D.prototype.setFrame = function(frame, flipped) {
-    this.frame = frame;
-    frame = this.coordinates[frame];
+Entity2D.prototype.onLoad = function() {
+    // We set the material of the sprite.
+    this.mesh.material.map = this.texture;
 
-    if (flipped) {
-        this.sprite.material.uvOffset.x = (frame.frame.x + frame.frame.w) / blanka.texture.image.width;
-    } else {
-        this.sprite.material.uvOffset.x = (frame.frame.x) / blanka.texture.image.width;
+    // We only set the sprite scale for the full image if it's not a sprite sheet.
+    if (Object.keys(this.coordinates).length) {
+        this.setSprite(this.sprite);
     }
-    this.sprite.material.uvOffset.y = 1 - (frame.frame.y + frame.frame.h) / blanka.texture.image.height;
 
-    this.sprite.material.uvScale.x = (flipped ? -1 : 1) * frame.frame.w / this.texture.image.width;
-    this.sprite.material.uvScale.y = frame.frame.h / this.texture.image.height;
+    this.setSize();
+};
 
-    this.sprite.scale.x = frame.frame.w;
-    this.sprite.scale.y = frame.frame.h;
+Entity2D.prototype.setAnimation = function(animation) {
+    this.frame = 0;
+    this.animation = animation;
+};
+
+Entity2D.prototype.setSprite = function(sprite, flipped) {
+    this.sprite = sprite;
+    sprite = this.coordinates[sprite];
+
+    if (sprite) {
+        if (flipped) {
+            this.mesh.material.uvOffset.x = (sprite.frame.x + sprite.frame.w) / this.texture.image.width;
+        } else {
+            this.mesh.material.uvOffset.x = (sprite.frame.x) / this.texture.image.width;
+        }
+        this.mesh.material.uvOffset.y = 1 - (sprite.frame.y + sprite.frame.h) / this.texture.image.height;
+
+        this.mesh.material.uvScale.x = (flipped ? -1 : 1) * sprite.frame.w / this.texture.image.width;
+        this.mesh.material.uvScale.y = sprite.frame.h / this.texture.image.height;
+    }
+
+    this.setSize();
+};
+
+Entity2D.prototype.setSize = function() {
+    var upscale = this.scene !== undefined ? this.scene.upscale : 1;
+
+    // If we have sprite sheet coordinates.
+    if (Object.keys(this.coordinates).length) {
+
+        // If the spite is valid.
+        if (this.coordinates[this.sprite]) {
+                this.mesh.scale.x = this.coordinates[this.sprite].frame.w * upscale;
+                this.mesh.scale.y = this.coordinates[this.sprite].frame.h * upscale;
+
+        // If not we just scale it to zero.
+        } else {
+            this.mesh.scale.x = 0;
+            this.mesh.scale.y = 0;
+        }
+
+    // If we do not we use the full image dimensions.
+    } else {
+        this.mesh.scale.set(this.texture.image.width * upscale, this.texture.image.height * upscale);
+    }
+};
+
+Entity2D.prototype.onResize = function() {
+    this.setSize();
 };
 
 Entity2D.prototype.update = function() {
     Entity.prototype.update.call(this);
 
-    var frames;
-    if (this.scene.game.frame % 8 === 0) {
-        if (this.animations[this.animation]) {
-            if (this.animations[this.animation].alias) {
-                frames = this.animations[this.animations[this.animation].alias].frames;
-            } else {
-                frames = this.animations[this.animation].frames;
-            }
-            var index = frames.indexOf(this.frame);
-            if (index < 0) {
-                this.setFrame(frames[0], this.flipped);
-            } else {
-                this.setFrame(frames[(index + 1) % frames.length], this.flipped);
-            }
+    if (this.animations[this.animation]) {
+        var animation = this.animations[this.animation];
+        this.delta += this.scene.game.delta;
+        var frames = animation.alias && this.animations[animation.alias] ? this.animations[animation.alias].frames : animation.frames;
+        if (this.delta > frames[this.frame].duration) {
+            this.delta = 0;
+            this.frame = (this.frame + 1) % frames.length;
+            this.setSprite(frames[this.frame].sprite, animation.flipped);
         }
     }
 };

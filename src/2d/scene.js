@@ -19,6 +19,9 @@ var Scene2D = function(parameters) {
     this.camera.updateProjectionMatrix();
     this.add(this.camera);
 
+    // Initializing upscale.
+    this.upscale = 1.0;
+
     // Creating the pass for that scene.
     this.pass = new RenderPass({
         scene: this,
@@ -44,15 +47,14 @@ Scene2D.prototype.setResolution = function(width, height) {
     this.camera.updateProjectionMatrix();
 
     if (this.game.resolution.isValid() && this.game.resolution.adaptive) {
-        scale = this.game.div.offsetWidth / this.game.resolution.width;
+        this.upscale = this.game.div.offsetWidth / this.game.resolution.width;
     } else {
-        scale = 1.0;
+        this.upscale = 1.0;
     }
 
     for (key in this.children) {
-        if (this.children[key] instanceof Entity2D) {
-            var image = this.children[key].sprite.material.map.image;
-            this.children[key].sprite.scale.set(image.width * scale, image.height * scale);
+        if (this.children[key].onResize) {
+            this.children[key].onResize();
         }
     }
 };
