@@ -49,7 +49,7 @@ var Entity2D = function(parameters) {
     this.offset = parameters.offset ? parameters.offset : new THREE.Vector3(0, 0, 0);
     this.coordinates = {};
     this.animations = {};
-    this.animation = '';
+    this.animation = parameters.animation ? parameters.animation : '';
     this.flipped = false;
     this.frame = '';
     this.filtering = parameters.filtering ? parameters.filtering : false;
@@ -74,11 +74,11 @@ Entity2D.prototype.setFrame = function(frame, flipped) {
     frame = this.coordinates[frame];
 
     if (flipped) {
-        this.sprite.material.uvOffset.x = (frame.frame.x + frame.frame.w) / blanka.texture.image.width;
+        this.sprite.material.uvOffset.x = (frame.frame.x + frame.frame.w) / this.texture.image.width;
     } else {
-        this.sprite.material.uvOffset.x = (frame.frame.x) / blanka.texture.image.width;
+        this.sprite.material.uvOffset.x = (frame.frame.x) / this.texture.image.width;
     }
-    this.sprite.material.uvOffset.y = 1 - (frame.frame.y + frame.frame.h) / blanka.texture.image.height;
+    this.sprite.material.uvOffset.y = 1 - (frame.frame.y + frame.frame.h) / this.texture.image.height;
 
     this.sprite.material.uvScale.x = (flipped ? -1 : 1) * frame.frame.w / this.texture.image.width;
     this.sprite.material.uvScale.y = frame.frame.h / this.texture.image.height;

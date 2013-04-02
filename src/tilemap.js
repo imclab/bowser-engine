@@ -79,9 +79,12 @@ var TileMap = function(parameters) {
     this.materials = [];
     // Each pice of geometry in this array is a renderable layer
     this.geometries = [];
+    this.nonWalkableIds = [];
+    this.collisionLayers = [4];
     this.camera = parameters.camera ? parameters.camera : undefined;
     this.cameraLockAxis = parameters.cameraLockAxis ? parameters.cameraLockAxis : new THREE.Vector3(1, 1, 0);
     this.cameraUVtoAxis = parameters.cameraUVtoAxis ? parameters.cameraUVtoAxis : ['x', 'y'];
+    this.typeClasses = parameters.typeClasses ? parameters.typeClasses : [];
     // used to map cordinates to tile maps.
     this.offsetUnits = new THREE.Vector2();
     // Load the map data
@@ -247,23 +250,118 @@ TileMap.prototype.materialIdForGid = function(gid) {
 };
 
 TileMap.prototype.objectFound = function(layerName, objectData) {
-    switch (objectData.type) {
-        case "Camera":
-            if (this.camera) {
-                var objectWidth = objectData.width;
-                var objectHeight = objectData.height;
-                var position = new THREE.Vector3(objectData.x, objectData.y + objectHeight, 0);
-                position = tile.mapToTile(position);
-                this.camera.position.x = position.x;
-                this.camera.position.y = position.y;
+    var objectHeight = objectData.height;
+    var position = new THREE.Vector3(objectData.x, objectData.y + objectData.height, this.geometries[this.layerId(layerName)].position.z);
+    position = tile.mapToTile(position);
+    if (objectData.type === "Camera") {
+        if (this.camera) {
+            this.camera.position.x = position.x;
+            this.camera.position.y = position.y;
+        }
+    } else if ('gid' in objectData) {
+        // found a image layer
+        if (objectData.type in this.typeClasses) {
+            var props = {
+                position: position
+            };
+            if ('animation' in objectData.properties) {
+                props['animation'] = objectData.properties.animation;
             }
-            break;
-        default:
-            // run the onObjectFound callback for every object found
-            if (this.onObjectFound !== undefined) {
-                this.onObjectFound(layerName, objectData, this);
+            if ('layerColliders' in objectData.properties) {
+                var names = objectData.properties.layerColliders.split(',');
+                var layerColliders = {};
+                for (var key in names) {
+                    var name = names[key];
+                    console.log('Found layer collider', name);
+                    if (name in objectData.properties) {
+                        var cords = objectData.properties[name].split(',');
+                        for (var i = cords.length - 1; i >= 0; i--) {
+                            cords[i] = parseInt(cords[i], 10);
+                        }
+                        var size = new THREE.Vector3(0, 0, 0);
+                        var pos = new THREE.Vector3(0, 0, 1);
+                        var geo;
+                        // Subdivide the collider so a vertex will always be in every tile position
+                        var subDivX, subDivY, subDivZ;
+                        switch (cords.length) {
+                            case 4:
+                                pos.x = cords[0];
+                                pos.y = cords[1];
+                                size.x = cords[2];
+                                size.y = cords[3];
+                                subDivX = Math.ceil(size.x / this.mapData.tilewidth);
+                                subDivY = Math.ceil(size.y / this.mapData.tileheight);
+                                break;
+                            case 2:
+                                size.x = cords[0];
+                                size.y = cords[1];
+                                subDivX = Math.ceil(size.x / this.mapData.tilewidth);
+                                subDivY = Math.ceil(size.y / this.mapData.tileheight);
+                                break;
+                            case 6:
+                                pos.x = cords[0];
+                                pos.y = cords[1];
+                                pos.z = cords[2];
+                                size.x = cords[3];
+                                size.y = cords[4];
+                                size.z = cords[5];
+                                subDivX = Math.ceil(size.x / this.mapData.tilewidth);
+                                subDivY = Math.ceil(size.y / this.mapData.tileheight);
+                                subDivZ = Math.ceil(size.z / this.mapData.tilewidth);
+                                break;
+                            case 3:
+                                size.x = cords[0];
+                                size.y = cords[1];
+                                size.z = cords[2];
+                                subDivX = Math.ceil(size.x / this.mapData.tilewidth);
+                                subDivY = Math.ceil(size.y / this.mapData.tileheight);
+                                subDivZ = Math.ceil(size.z / this.mapData.tilewidth);
+                                break;
+                        }
+                        switch (cords.length) {
+                            case 2:
+                            case 4:
+                                geo = new THREE.PlaneGeometry(size.x, size.y, subDivX, subDivY);
+                                break;
+                            case 3:
+                            case 6:
+                                geo = new THREE.CubeGeometry(size.x, size.y, size.z, subDivX, subDivY, subDivZ);
+                                break;
+                        }
+                        var mesh = new BOWSER.Collider({
+                            geometry: geo,
+                            emit: true,
+                            receive: false,
+                            key: name
+                        });
+                        mesh.position.set(pos.x + size.x / 2, pos.y + size.y / 2, pos.z);
+                        layerColliders[name] = mesh;
+                    }
+                }
+                if (layerColliders) {
+                    props['colliders'] = layerColliders;
+                }
             }
+            var obj = new this.typeClasses[objectData.type](props);
+            this.scene.add(obj);
+        }
+    } else {
+        // run the onObjectFound callback for every object found
+        if (this.onObjectFound !== undefined) {
+            this.onObjectFound(layerName, objectData, this);
+        }
     }
+};
+
+TileMap.prototype.positionIsWalkable = function(position) {
+    var tileIndex = this.tileForPosition(position);
+    for (var index in this.collisionLayers) {
+        var layerId = this.collisionLayers[index];
+        if (this.nonWalkableIds.indexOf(this.mapData.layers[layerId].data[tileIndex]) != -1) {
+            return false;
+        }
+    }
+    return true;
 };
 
 /*
@@ -340,19 +438,13 @@ TileMap.prototype.setMapData = function(mapData) {
         // Process individual tile properties
         if ('tileproperties' in tilesets[tileset]) {
             var tileproperties = tilesets[tileset].tileproperties;
-            if (this.onTilePropFound !== undefined) {
-                for (var tile in tileproperties) {
-                    this.onTilePropFound(tile, tileproperties[tile], this);
-                }
-            } else {
-                // Emit generic callback if one was not provided.
-                if (this.onPropFound !== undefined) {
-                    this.onPropFound(tileproperties, this.PropTile, this);
-                }
+            for (var tile in tileproperties) {
+                this.tilePropFound(tile, tileproperties[tile]);
             }
         }
     }
     this.loaded = true;
+    this.scene.showColliders(true);
 };
 
 /*
@@ -378,6 +470,36 @@ TileMap.prototype.setTileGid = function(gid, tileId, layerId) {
         }
         layer.data[tileId] = gid;
         this.geometries[layerId].geometry.uvsNeedUpdate = true;
+    }
+};
+
+TileMap.prototype.tileForPosition = function(position) {
+    var pos = this.tileIdForPosition(position);
+    return Math.floor(pos.y) * this.mapData.width + Math.floor(pos.x);
+};
+
+TileMap.prototype.tileIdForPosition = function(position) {
+    var ret = position.clone();
+    //console.log((ret.x + this.offsetUnits.x), this.mapData.height * this.mapData.tileheight - (ret.y + this.offsetUnits.y));
+    ret.x = (ret.x + this.offsetUnits.x) / this.mapData.tilewidth;
+    ret.y = this.mapData.height - (ret.y + this.offsetUnits.y) / this.mapData.tileheight;
+    return ret;
+};
+
+TileMap.prototype.tilePropFound = function(gid, properties) {
+    // Compensate for the GID in tile properties being off by 1
+    gid = parseInt(gid, 10) + 1;
+    if ("walkable" in properties) {
+        if (properties.walkable === "false") {
+            // Keeping a list of all non-walkable tiles would be much larger than a list
+            // of non-walkable tiles.
+            this.nonWalkableIds.push(gid);
+        } else {
+            // Emit generic callback if one was not provided.
+            if (this.onPropFound !== undefined) {
+                this.onPropFound(tileproperties, this.PropTile, this);
+            }
+        }
     }
 };
 
@@ -475,6 +597,26 @@ TileMap.prototype.uvsForGid = function(gid) {
     ret[3].set(ret[2].x, ret[0].y);
 
     return ret;
+};
+
+TileMap.prototype.walkableForEntity = function(entity) {
+    for (var layerName in entity.colliders) {
+        var layerData = this.mapData.layers[this.layerId(layerName)].data;
+        var collider = entity.colliders[layerName];
+        var verts = collider.geometry.vertices;
+        for (var index in verts) {
+            var pos = entity.position.clone();
+            var vertex = verts[index];
+            pos.x += collider.position.x + vertex.x;
+            pos.y += collider.position.y + vertex.y;
+            pos.z += collider.position.z + vertex.z;
+            var tileIndex = this.tileForPosition(pos);
+            if (this.nonWalkableIds.indexOf(layerData[tileIndex]) != -1) {
+                return false;
+            }
+        }
+    }
+    return true;
 };
 
 // Exports.
