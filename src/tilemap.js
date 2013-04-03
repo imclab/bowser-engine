@@ -80,6 +80,7 @@ var TileMap = function(parameters) {
     // Each pice of geometry in this array is a renderable layer
     this.geometries = [];
     this.nonWalkableIds = [];
+    this.animationInfo = {};
     this.collisionLayers = [4];
     this.camera = parameters.camera ? parameters.camera : undefined;
     this.cameraLockAxis = parameters.cameraLockAxis ? parameters.cameraLockAxis : new THREE.Vector3(1, 1, 0);
@@ -494,11 +495,19 @@ TileMap.prototype.tilePropFound = function(gid, properties) {
             // Keeping a list of all non-walkable tiles would be much larger than a list
             // of non-walkable tiles.
             this.nonWalkableIds.push(gid);
-        } else {
-            // Emit generic callback if one was not provided.
-            if (this.onPropFound !== undefined) {
-                this.onPropFound(tileproperties, this.PropTile, this);
-            }
+        }
+    } else if ("duration" in properties && "nextTile" in properties) {
+        var active = false;
+        if ("active" in properties) {
+            active = properties.active;
+        }
+        if (!(gid in this.animationInfo)) {
+            this.animationInfo[gid] = {
+                duration: parseInt(properties.duration, 10),
+                nextTile: parseInt(properties.nextTile, 10),
+                active: active,
+                animValue: 0.0
+            };
         }
     }
 };
@@ -516,6 +525,37 @@ TileMap.prototype.update = function() {
                 this.camera.position[axis] = -this.offsetUnits[offsetAxis];
             } else if (this.camera.position[axis] + offset > this.offsetUnits[offsetAxis]) {
                 this.camera.position[axis] = this.offsetUnits[offsetAxis] - offset;
+            }
+        }
+    }
+    var skipIds = [];
+    for (var id in this.animationInfo) {
+        var anim = this.animationInfo[id];
+        anim.animValue += this.scene.game.delta;
+        id = parseInt(id, 10);
+        if (skipIds.indexOf(id) == -1 && anim.active && anim.animValue > anim.duration) {
+            //console.log([id]);
+            anim.animValue = 0.0;
+            var nextId = anim.nextTile;
+            anim.active = false;
+            if (nextId in this.animationInfo) {
+                this.animationInfo[nextId].active = true;
+                skipIds.push(nextId);
+                //console.log(['next', id, nextId, skipIds]);
+            }
+            //console.log([id, anim.nextTile, anim]);
+            for (var layerId = 0; layerId < this.mapData.layers.length; layerId++) {
+                var layerData = this.layerData({
+                    layerId: "Tile Layer 1"
+                });
+                for (var index in layerData) {
+                    index = parseInt(index, 10);
+                    //console.log(layerData[index]);
+                    if (layerData[index] === id) {
+                        this.setTileGid(anim.nextTile, index, layerId);
+                        //console.log(['setting tile', anim.nextTile, index, layerId]);
+                    }
+                }
             }
         }
     }
