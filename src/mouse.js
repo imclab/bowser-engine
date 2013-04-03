@@ -23,6 +23,7 @@ var Mouse = function(game) {
     this.position = {};
     this.position.screen = new THREE.Vector2();
     this.position.world = new THREE.Vector3();
+    this.displacement = new THREE.Vector2();
     this.projector = new THREE.Projector();
 };
 
@@ -68,13 +69,28 @@ Mouse.prototype.setButtonState = function(event) {
  * @returns {undefined}
  */
 Mouse.prototype.setPosition = function(event) {
-    event.preventDefault();
-    
-    // This needs to be improved.
-    this.position.world.x = ( (event.clientX - this.game.div.offsetLeft) / (window.innerWidth - this.game.div.offsetLeft * 2) ) * 2 - 1;
-    this.position.world.y = - ( (event.clientY - this.game.div.offsetTop) / (window.innerHeight - this.game.div.offsetTop * 2) ) * 2 + 1;
-    this.position.screen.x = this.game.resolution.height - (((event.clientY - this.game.div.offsetTop) / (window.innerHeight - this.game.div.offsetTop * 2)) * this.game.resolution.height);
-    this.position.screen.y = event.clientX - this.game.div.offsetLeft;
+
+    // Calculating new position based on bottom left corner.
+    var x = event.clientX - this.game.div.offsetLeft;
+    var y = this.game.div.offsetHeight - (event.clientY - this.game.div.offsetTop);
+
+    if (this.locked) {
+        this.displacement.x = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+        this.displacement.y = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+    } else {
+        this.displacement.x = x - this.position.screen.x;
+        this.displacement.y = y - this.position.screen.y;
+    }
+
+    this.position.screen.x = x;
+    this.position.screen.y = y;
+
+    // The old Mike's stuff probably useful later.
+    // event.preventDefault();
+    // this.position.world.x = ( (event.clientX - this.game.div.offsetLeft) / (window.innerWidth - this.game.div.offsetLeft * 2) ) * 2 - 1;
+    // this.position.world.y = - ( (event.clientY - this.game.div.offsetTop) / (window.innerHeight - this.game.div.offsetTop * 2) ) * 2 + 1;
+    // this.position.screen.x = this.game.resolution.height - (((event.clientY - this.game.div.offsetTop) / (window.innerHeight - this.game.div.offsetTop * 2)) * this.game.resolution.height);
+    // this.position.screen.y = event.clientX - this.game.div.offsetLeft;
 };
 
 // Exports.

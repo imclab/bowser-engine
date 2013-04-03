@@ -33,6 +33,7 @@ var Game = function(parameters) {
 
 	// Initializing parameters.
 	parameters = parameters ? parameters : {};
+	this.modal = parameters.modal ? parameters.modal : false;
 	this.key = parameters.key ? parameters.key : 'game';
 
 	// Creating the game div.
@@ -62,6 +63,7 @@ var Game = function(parameters) {
 	this.delta = 0;
 
 	// Setting up the game canvas.
+	this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
 	this.canvas.setAttribute('tabindex', 1);
 	this.canvas.style.outline = 'none';
 
@@ -241,27 +243,34 @@ Game.prototype.render = function() {
 Game.prototype.connectHandlers = function() {
 	var that = this;
 
-	this.handlers.windowResize = function(event) {
+	this.handlers.windowSizeChange = function(event) {
 		that.onResize();
 	};
 
-	this.handlers.documentFullScreen = function(event) {
+	this.handlers.documentFullScreenChange = function(event) {
 		that.onResize();
 	};
 
-	this.handlers.canvasBlur = function(event) {
-		that.onBlur();
+	this.handlers.mouseLockChange = function(event) {
+		that.mouse.locked = !that.mouse.locked;
 	};
 
-	this.handlers.canvasFocus = function(event) {
-		that.onFocus();
+	this.handlers.canvasFocusChange = function(event) {
+		if (event.type === 'focus') {
+			that.onFocus();
+		} else {
+			that.onBlur();
+		}
 	};
 
-	this.handlers.mouseMove = function(event) {
+	this.handlers.mousePositionChange = function(event) {
 		that.mouse.setPosition(event);
 	};
 
 	this.handlers.mouseButtonChange = function(event) {
+		if (that.modal && !that.mouse.locked) {
+			that.canvas.requestPointerLock();
+		}
 		that.mouse.setButtonState(event);
 	};
 
@@ -282,15 +291,20 @@ Game.prototype.connectHandlers = function() {
 		that.keyboard.setKeyState(event);
 	};
 
-	window.addEventListener('resize', this.handlers.windowResize);
-	document.addEventListener('webkitfullscreenchange', this.handlers.documentFullScreen);
+	window.addEventListener('resize', this.handlers.windowSizeChange);
+
+	document.addEventListener('webkitfullscreenchange', this.handlers.documentFullScreenChange);
+	document.addEventListener('pointerlockchange', this.handlers.mouseLockChange);
+	document.addEventListener('mozpointerlockchange', this.handlers.mouseLockChange);
+	document.addEventListener('webkitpointerlockchange', this.handlers.mouseLockChange);
+
 	this.canvas.addEventListener('keydown', this.handlers.keyboardKeyChange);
 	this.canvas.addEventListener('keyup', this.handlers.keyboardKeyChange);
-	this.canvas.addEventListener('mousemove', this.handlers.mouseMove);
+	this.canvas.addEventListener('mousemove', this.handlers.mousePositionChange);
 	this.canvas.addEventListener('mousedown', this.handlers.mouseButtonChange);
 	this.canvas.addEventListener('mouseup', this.handlers.mouseButtonChange);
-	this.canvas.addEventListener('blur', this.handlers.canvasBlur);
-	this.canvas.addEventListener('focus', this.handlers.canvasFocus);
+	this.canvas.addEventListener('blur', this.handlers.canvasFocusChange);
+	this.canvas.addEventListener('focus', this.handlers.canvasFocusChange);
 };
 
 /**
@@ -300,14 +314,19 @@ Game.prototype.connectHandlers = function() {
  */
 Game.prototype.disconnectHandlers = function() {
 	window.removeEventListener('resize', this.handlers.windowResize);
+
 	document.removeEventListener('webkitfullscreenchange', this.handlers.documentFullScreen);
+	document.removeEventListener('pointerlockchange', this.handlers.mouseLockChange);
+	document.removeEventListener('mozpointerlockchange', this.handlers.mouseLockChange);
+	document.removeEventListener('webkitpointerlockchange', this.handlers.mouseLockChange);
+
 	this.canvas.removeEventListener('keydown', this.handlers.keyboardKeyChange);
 	this.canvas.removeEventListener('keyup', this.handlers.keyboardKeyChange);
-	this.canvas.addEventListener('mousemove', this.handlers.mouseMove);
-	this.canvas.addEventListener('mousedown', this.handlers.mouseButtonChange);
-	this.canvas.addEventListener('mouseup', this.handlers.mouseButtonChange);
-	this.canvas.removeEventListener('blur', this.handlers.blur);
-	this.canvas.removeEventListener('focus', this.handlers.canvasFocus);
+	this.canvas.removeEventListener('mousemove', this.handlers.mousePositionChange);
+	this.canvas.removeEventListener('mousedown', this.handlers.mouseButtonChange);
+	this.canvas.removeEventListener('mouseup', this.handlers.mouseButtonChange);
+	this.canvas.removeEventListener('blur', this.handlers.canvasFocusChange);
+	this.canvas.removeEventListener('focus', this.handlers.canvasFocusChange);
 };
 
 /**
