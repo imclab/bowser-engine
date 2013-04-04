@@ -24,6 +24,10 @@ var Entity2D = function(parameters) {
         }
     });
 
+    // Creating the previous object.
+    this.previous = {};
+    this.previous.animation = '';
+
     // Creating sprite object.
     this.mesh = new THREE.Sprite(new THREE.SpriteMaterial({
         useScreenCoordinates: false,
@@ -84,7 +88,7 @@ Entity2D.prototype.onLoad = function() {
 };
 
 Entity2D.prototype.setAnimation = function(animation) {
-    this.frame = 0;
+    this.previous.animation = this.animation;
     this.animation = animation;
 };
 
@@ -137,16 +141,26 @@ Entity2D.prototype.onResize = function() {
 Entity2D.prototype.update = function() {
     Entity.prototype.update.call(this);
 
+    // Checking if animation changed at this frame.
+    var animationChanged = this.previous.animation !== this.animation;
+
+    if (animationChanged) {
+        this.frame = 0;
+    }
+
     if (this.animations[this.animation]) {
         var animation = this.animations[this.animation];
         this.delta += this.scene.game.delta;
         var frames = animation.alias && this.animations[animation.alias] ? this.animations[animation.alias].frames : animation.frames;
-        if (this.delta > frames[this.frame].duration) {
+        if (this.delta > frames[this.frame].duration || animationChanged) {
             this.delta = 0;
-            this.frame = (this.frame + 1) % frames.length;
             this.setSprite(frames[this.frame].sprite, animation.flipped);
+            this.frame = (this.frame + 1) % frames.length;
         }
     }
+
+    // Setting the previous animation value.
+    this.previous.animation = this.animation;
 };
 
 // Exports.
