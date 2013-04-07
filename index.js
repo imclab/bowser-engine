@@ -8,6 +8,8 @@ module.exports = {
     // Classes.
     Action: require('./src/action'),
     Collider: require('./src/collider'),
+    PerspectiveCamera: require('./src/camera/perspective'),
+    OrthographicCamera: require('./src/camera/orthographic'),
     CRTShader: require('./src/shader/crt'),
     Entity2D: require('./src/2d/entity'),
     Entity3D: require('./src/3d/entity'),
