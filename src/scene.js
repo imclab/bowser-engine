@@ -1,5 +1,7 @@
-// Imports.
+// Library imports.
 var THREE = require('three');
+
+// Class imports.
 var Collider = require('./collider');
 
 /**
@@ -30,20 +32,50 @@ var Scene = function(parameters) {
 
 Scene.prototype = Object.create(THREE.Scene.prototype);
 
+Scene.prototype.setGame = function(game) {
+    game.scenes[this.key] = this;
+    game.composer.add(this.pass);
+
+    // Asking the children to set their game.
+    for (var key in this.children) {
+        if (this.children[key].setGame instanceof Function) {
+            this.children[key].setGame(game);
+        }
+    }
+
+    // Setting pointer to the game.
+    this.game = game;
+};
+
 /**
- * Allows to add entities to the scene.
+ * Adds an object to the scene.
+ * Also links it to the scene and trigger the load method.
  */
 Scene.prototype.add = function(object) {
 
-    // Linking the scene to the object.
-    object.scene = this;
+    // Declaring.
+    var that = this;
 
-    // Initialize the object.
-    if (object.init instanceof Function) {
-        object.init();
+    // Asking the object to set its scene.
+    if (object.setScene instanceof Function) {
+        object.setScene(this);
     }
 
-    THREE.Scene.prototype.add.call(this, object);
+    // Asking the object to set its game.
+    if (object.setGame instanceof Function) {
+        object.setGame(this.game);
+    }
+
+    // If the object has a load function we load it and add it on callback.
+    if (object.load instanceof Function) {
+        object.load(function() {
+            THREE.Scene.prototype.add.call(that, object);
+        });
+
+    // We just add the object to the scene calling super.
+    } else {
+        THREE.Scene.prototype.add.call(this, object);
+    }
 };
 
 /**
@@ -53,28 +85,14 @@ Scene.prototype.add = function(object) {
 Scene.prototype.update = function() {
 
     // Updates all children with an update method.
-    for(var key in this.children) {
-        if(this.children[key].update instanceof Function) {
+    for (var key in this.children) {
+        if (this.children[key].update instanceof Function) {
             this.children[key].update();
         }
     }
 
     // Launching custom update.
     this.onUpdate();
-};
-
-/**
- * Updates the scene and it's children
- * @returns {undefined}
- */
-Scene.prototype.init = function() {
-
-    // Init all children with an init method.
-    for(var key in this.children) {
-        if(this.children[key].init instanceof Function) {
-            this.children[key].init();
-        }
-    }
 };
 
 /**
@@ -101,6 +119,3 @@ Scene.prototype.hideColliders = function() {
 
 // Exports.
 module.exports = Scene;
-
-
-

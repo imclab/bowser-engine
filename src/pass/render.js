@@ -37,9 +37,7 @@ RenderPass.prototype = {
 			this.oldClearAlpha = renderer.getClearAlpha();
 			renderer.setClearColor(this.clearColor, this.clearAlpha);
 		}
-
 		renderer.render(this.scene, this.camera, readBuffer, this.clear);
-
 		if (this.clearColor) {
 			renderer.setClearColor(this.oldClearColor, this.oldClearAlpha);
 		}

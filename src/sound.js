@@ -1,6 +1,9 @@
-// Imports.
+// Library imports.
 var THREE = require('three');
 var WATCHJS = require('watchjs');
+
+// Class imports.
+var Loader = require('./loader');
 
 /**
  * @constructor
@@ -13,7 +16,9 @@ var Sound = function(parameters) {
 
     // Treating parameters
     parameters = parameters ? parameters : {};
+    this.parameters = parameters;
     this.key = parameters.key ? parameters.key : this.id;
+    this.loader = new Loader();
     this.entity = undefined;
     this.scene = undefined;
     this.radius = parameters.radius !== undefined ? parameters.radius : 10;
@@ -28,7 +33,7 @@ var Sound = function(parameters) {
     // Treating more parameters.
     this.visible = parameters.visible !== undefined ? parameters.visible : false;
 
-    if (webkitAudioContext) {
+    if (window.webkitAudioContext) {
 
         // Adding watchers.        
         WATCHJS.watch(that, 'volume', function() {
@@ -48,8 +53,6 @@ var Sound = function(parameters) {
         this.position = parameters.position ? parameters.position : this.position;
         this.panner = parameters.panner ? parameters.panner : false;
         this.doppler = parameters.doppler ? parameters.doppler : false;
-        this.autoplay = parameters.autoplay ? parameters.autoplay : false;
-        this.url = parameters.url;
         this.buffer = undefined;
         this.volume = parameters.volume ? parameters.volume : 1;
         this.attenuation = parameters.attenuation ? parameters.attenuation : 1;
@@ -89,30 +92,29 @@ Sound.prototype.add = function(object) {
     console.warn('Cannot add anything to sound ' + object.key + '. Skipping.');
 };
 
-Sound.prototype.init = function() {
-    var that = this;
+Sound.prototype.setGame = function(game) {
+    if (game) {
 
-    // Registering in the entity.
-    if (this.entity) {
-        this.entity.sounds[this.key] = this;
-        if (this.entity.scene && this.entity.scene.game) {
-            this.sampler = this.entity.scene.game.sampler;
+        var that = this;
+
+        this.sampler = game.sampler;
+        this.game = game;
+
+        this.loader.get(this.parameters.url, function(data) {
+            that.sampler.context.decodeAudioData(data, function(buffer) {
+                that.buffer = buffer;
+                if (that.parameters.play) {
+                    that.play();
+                }
+            });
+        });
+
+        // Basically we can only attach the sound when the sound object is connected to a game.
+        if (!(this.analyser)) {
+            this.analyser = this.sampler.context.createAnalyser();
+            this.gain = this.sampler.context.createGainNode();
+            this.gain.gain.value = this.volume;
         }
-    }
-
-    // Registering in the scene.
-    if (this.scene) {
-        this.scene.sounds[this.key] = this;
-        if (this.scene.game) {
-            this.sampler = this.scene.game.sampler;
-        }
-    }
-
-    // Basically we can only load and attach the sound when the sound object is connected to a game.
-    if (this.sampler && !(this.analyser)) {
-        this.analyser = this.sampler.context.createAnalyser();
-        this.gain = this.sampler.context.createGainNode();
-        this.gain.gain.value = this.volume;
 
         if(this.panner) {
             this.panner = this.sampler.context.createPanner();
@@ -120,28 +122,48 @@ Sound.prototype.init = function() {
             that.panner.rolloffFactor = that.attenuation;
             this.gain.connect(this.panner);
             this.panner.connect(this.sampler.gain);
+
         } else {
             this.gain.connect(this.sampler.gain);
         }
+    }
+};
 
-        var request = new XMLHttpRequest();
-        request.open('GET', this.url, true);
-        request.responseType = 'arraybuffer';
+Sound.prototype.setScene = function(scene) {
+    if (scene) {
 
-        request.onload = function() {
-            that.sampler.context.decodeAudioData(request.response, function(buffer) {
-                that.buffer = buffer;
-                if(that.autoplay) {
-                    that.play();
-                }
-            });
-        };
-        request.send();
+        // Register the sound in the scene.
+        scene.sounds[this.key] = this;
+
+        // Connecting the sound to the game sampler.
+        if (scene.game) {
+            this.sampler = scene.game.sampler;
+        }
+
+        // Setting the scene pointer.
+        this.scene = scene;
+    }
+};
+
+Sound.prototype.setEntity = function(entity) {
+    if (entity) {
+
+        // Register the sound in the entity.    
+        entity.sounds[this.key] = this;
+
+        // Connecting the sound to the game sampler.
+        if (entity.scene && entity.scene.game) {
+            this.sampler = entity.scene.game.sampler;
+        }
+
+        // Setting the scene pointer.
+        this.entity = entity;
     }
 };
 
 Sound.prototype.update = function() {
-    if (webkitAudioContext) {
+    if (window.webkitAudioContext) {
+
         if(this.panner) {
             var position = new THREE.Vector3().getPositionFromMatrix(this.matrixWorld);
             this.panner.setPosition(position.x ,position.y, position.z);

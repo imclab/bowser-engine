@@ -1,12 +1,15 @@
-// Imports.
+// Library imports.
 var THREE = require('three');
 var WATCHJS = require('watchjs');
+
+// Class imports.
 var Sampler = require('./sampler');
 var Base = require('./base');
 var Keyboard = require('./keyboard');
 var Mouse = require('./mouse');
 var Composer = require('./composer');
 var Scene = require('./scene');
+var Loader = require('./loader');
 var Resolution = require('./resolution');
 var Monitor = require('./monitor');
 var Scene3D = require('./3d/scene');
@@ -89,7 +92,7 @@ var Game = function(parameters) {
 	});
 
 	// Initializing parameters.
-	this.clearColor = parameters.clearColor ? parameters.clearColor : 0x0432ff;
+	this.clearColor = parameters.clearColor !== undefined ? parameters.clearColor : 0x0432ff;
 	this.resolution = parameters.resolution ? parameters.resolution : new Resolution();
 
 	// Adding Additional Watchers.
@@ -407,22 +410,11 @@ Game.prototype.onResize = function() {
 
 /**
  * Adds objects to the scene. Currently support scene objects.
- * @method
- * @param {Object} The object to be added to the game.
  */
 Game.prototype.add = function(object) {
-	object.game = this;
-
-    // Initialize the object.
-    if (object.init instanceof Function) {
-        object.init();
+	if (object.setGame instanceof Function) {
+		object.setGame(this);
     }
-
-	if (object instanceof Scene) {
-		this.scenes[object.key] = object;
-		this.composer.add(object.pass);
-	}
-	return object;
 };
 
 /**

@@ -7,11 +7,11 @@ var THREE = require('three');
  */
 var Misc = {
 
-   /**
-    * Returns a random color.
-    * @returns {Number} A random hexadecimal color.
-    */
-   getRandomColor: function() {
+    /**
+     * Returns a random color.
+     * @returns {Number} A random hexadecimal color.
+     */
+    getRandomColor: function() {
         "use strict";
         return Math.floor(Math.random() * 16777215);
     },
@@ -71,6 +71,7 @@ var Misc = {
     },
 
     getJSON: function(url, callback) {
+        console.warn('Misc.getJSON is a deprecated method. Use Loader.get instead');
         var request = new XMLHttpRequest();
         request.open('GET', url);
         request.onload = function() {

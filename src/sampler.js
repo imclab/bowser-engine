@@ -7,7 +7,7 @@ var WATCHJS = require('watchjs');
  * @param {String} url URL to the sound file.
  */
 var Sampler = function(game, parameters) {
-    if (webkitAudioContext) {
+    if (window.webkitAudioContext) {
 
         // Initializing audio context.
         this.context = new webkitAudioContext();
@@ -33,7 +33,7 @@ var Sampler = function(game, parameters) {
 };
 
 Sampler.prototype.update = function() {
-    if (webkitAudioContext) {
+    if (window.webkitAudioContext) {
         if (this.listener) {
             var position = new THREE.Vector3().getPositionFromMatrix(this.listener.matrixWorld);
             this.context.listener.setPosition(position.x, position.y, position.z);

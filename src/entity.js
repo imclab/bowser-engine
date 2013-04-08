@@ -1,7 +1,10 @@
-// Imports.
+// Library imports.
 var THREE = require('three');
 var WATCHJS = require('watchjs');
+
+// Class imports.
 var Action = require('./action');
+var Loader = require('./loader');
 var Scene3D = require('./3d/scene');
 
 /**
@@ -13,9 +16,18 @@ var Scene3D = require('./3d/scene');
  */
 var Entity = function(parameters) {
     "use strict";
-    var key;
-    var that = this;
+
+    // Calling super.
     THREE.Object3D.call(this);
+
+    // Declaring.
+    var key, that = this;
+
+    // Initializing parameters.
+    this.parameters = parameters ? parameters : {};
+
+    // Creating loader.
+    this.loader = new BOWSER.Loader();
 
     // Creating buffer object.
     this.buffer = {};
@@ -30,7 +42,7 @@ var Entity = function(parameters) {
     // Adding watchers.
     WATCHJS.watch(that, 'dynamic', function() {
         that.matrixAutoUpdate = that.dynamic;
-        if(that.dynamic) {
+        if (that.dynamic) {
             if (that.position.watchers) {
                 WATCHJS.unwatch(that.position, that.buffer.flagUpdateStatic);
                 WATCHJS.unwatch(that.rotation, that.buffer.flagUpdateStatic);
@@ -44,8 +56,8 @@ var Entity = function(parameters) {
     });
 
     WATCHJS.watch(that, 'visible', function() {
-        for(var key in that.children) {
-            if(that.children[key]._visible) {
+        for (var key in that.children) {
+            if (that.children[key]._visible) {
                 that.children[key].visible = that.visible * that.children[key]._visible;
                 delete that.children[key]['_visible'];
             } else {
@@ -69,17 +81,13 @@ var Entity = function(parameters) {
     this.key = parameters.key ? parameters.key : this.id;
     this.visible = parameters.visible ? parameters.visible : true;
     this.sounds = {};
+    this.delta = 0;
     this.entities = {};
     this.entity = undefined;
-    this.scene = undefined;
     this.colliders = {};
     this.actions = {};
     this.collisions = [];
     this.recursion = 0;
-    this.onCollision = parameters.onCollision ? parameters.onCollision : function() {};
-    this.onPreUpdate = parameters.onPreUpdate ? parameters.onPreUpdate : function() {};
-    this.onPostUpdate = parameters.onPostUpdate ? parameters.onPostUpdate : function() {};
-    this.onConstruction = parameters.onConstruction ? parameters.onConstruction : function() {};
     this.cof = 0;
     this.acceleration = new THREE.Vector3();
     this.displacement = new THREE.Vector3();
@@ -90,15 +98,21 @@ var Entity = function(parameters) {
     this.roughness = parameters.roughness ? parameters.roughness : 0.0;
     this.velocity = parameters.velocity ? parameters.velocity : new THREE.Vector3();
 
+    // This stuff has to go away.
+    this.onCollision = parameters.onCollision ? parameters.onCollision : function() {};
+    this.onPreUpdate = parameters.onPreUpdate ? parameters.onPreUpdate : function() {};
+    this.onPostUpdate = parameters.onPostUpdate ? parameters.onPostUpdate : function() {};
+    this.onConstruction = parameters.onConstruction ? parameters.onConstruction : function() {};
+
     // Add colliders if any provided.
     var colliders = parameters.colliders ? parameters.colliders : [];
-    for(key in colliders) {
+    for (key in colliders) {
         this.add(colliders[key]);
     }
 
     // Add entitites if any provided.
     var entities = parameters.entities ? parameters.entities : [];
-    for(key in entities) {
+    for (key in entities) {
         this.add(entities[key]);
     }
 
@@ -106,85 +120,81 @@ var Entity = function(parameters) {
     this.onConstruction();
 };
 
+Entity.prototype = Object.create(THREE.Object3D.prototype);
+
 /**
- * Returns an extented version of Entity using prototypal inheritance.
- * This should be used for any custom entity creation.
- * @param {Object} extension An object containing what will be added to the extended entity prototype.
+ * Allows to link the entity with a scene or entity.
+ * @param  {Base} Parent Should always be a scene.
+ * @return {undefined}
  */
-Entity.extend = function(extensions) {
-    var that = this;
-    extensions = extensions instanceof Object ? extensions : {};
+Entity.prototype.setScene = function(scene) {
+    if (scene) {
 
-    function Class () {
-        if (extensions.construct) {
-            extensions.construct.apply(this, arguments);
-        } else {
-            that.apply(this, arguments);
+        // Register the entity in the scene.
+        scene.entities[this.key] = this;
+
+        // Asking the children to set their scene.
+        for (var key in this.children) {
+            if (this.children[key].setScene instanceof Function) {
+                this.children[key].setScene(scene);
+            }
         }
+
+        // Setting the scene pointer.
+        this.scene = scene;
     }
-
-    Class.prototype = Object.create(this.prototype);
-
-    for (var key in extensions) {
-        if (key !== 'construct') {
-            Class.prototype[key] = extensions[key];
-        }
-    }
-
-    Class.prototype.constructor = Class;
-    Class.extend = arguments.callee;
-    return Class;
 };
 
-Entity.prototype = Object.create(THREE.Object3D.prototype);
+Entity.prototype.setGame = function(game) {
+    if (game) {
+
+        // Asking the children to set their scene.
+        for (var key in this.children) {
+            if (this.children[key].setGame instanceof Function) {
+                this.children[key].setGame(game);
+            }
+        }
+
+        // Setting the scene pointer.
+        this.game = game;
+    }
+};
 
 Entity.prototype.add = function(object) {
 
-    // Linking the object.
-    object.entity = this;
+    // Declaring.
+    var that = this;
 
-    // Initialize the object.
-    if(object.init instanceof Function) {
-        object.init();
+    // Setting the object's entity.
+    if (object.setEntity instanceof Function) {
+        object.setEntity(this);
     }
 
-    // This is an optimization to make sure the THREE objects we add to entity do not update their matrix.
-    if(!(object instanceof Entity)) {
-        if (object.updateMatrix) {
-            object.matrixAutoUpdate = false;
-            object.updateMatrix();
-        }
+    // Setting the object's scene.
+    if (object.setScene instanceof Function) {
+        object.setScene(this.scene);
     }
 
-    // Handle for actions.
-    if(object instanceof Action) {
-        this.actions[object.key] = object;
+    // Setting the object's scene.
+    if (object.setGame instanceof Function) {
+        object.setGame(this.game);
     }
 
-    THREE.Object3D.prototype.add.call(this, object);
-};
-
-Entity.prototype.init = function() {
-    var key;
-
-    // Registering in the entity.
-    if(this.entity) {
-        this.scene = this.entity.scene;
-        this.entity.entities[this.key] = this;
+    // This is an optimization to make sure all other object don't update their matrix.
+    if (!(object instanceof Entity) && object.updateMatrix) {
+        object.matrixAutoUpdate = false;
+        object.updateMatrix();
     }
 
-    // Registering in the scene.
-    if(this.scene) {
-        this.scene.entities[this.key] = this;
-    }
+    // If the object has a load function we load it and add it on callback.
+    if (object.load instanceof Function) {
+        object.load(function() {
+            THREE.Object3D.prototype.add.call(that, object);
+        });
 
-    // Asking the children to initialize.
-    for(key in this.children) {
-        if(this.children[key].init instanceof Function) {
-            this.children[key].entity = this;
-            this.children[key].scene = this.scene;
-            this.children[key].init();
-        }
+        // We just add the object to the scene calling super.
+    } else {
+        THREE.Object3D.prototype.add.call(this, object);
     }
 };
 
@@ -206,7 +216,7 @@ Entity.prototype.update = function() {
     // Launching custom pre-update.
     this.onPreUpdate();
 
-    if(this.dynamic) {
+    if (this.dynamic) {
 
         // Applying gravity and acceleration.
         this.velocity.add(this.scene.gravity);
@@ -231,7 +241,7 @@ Entity.prototype.update = function() {
         this.handleCollisions();
 
         // If any collision happened.
-        if(this.collisions.length) {
+        if (this.collisions.length) {
 
             // No collisions were detected. Applying normal force and friction.
             this.velocity.add(this.normalForce);
@@ -260,8 +270,8 @@ Entity.prototype.update = function() {
     this.onPostUpdate();
 
     // Updating the children.
-    for(key in this.children) {
-        if(this.children[key].update instanceof Function) {
+    for (key in this.children) {
+        if (this.children[key].update instanceof Function) {
             this.children[key].update();
         }
     }
@@ -279,12 +289,12 @@ Entity.prototype.update = function() {
 Entity.prototype.handleCollisions = function() {
 
     // For each colliders emitting.
-    for(var collider in this.colliders) {
+    for (var collider in this.colliders) {
 
-        if(this.colliders[collider].receive) {
+        if (this.colliders[collider].receive) {
 
             // For each vertex in the collider.
-            for(var id in this.colliders[collider].geometry.vertices) {
+            for (var id in this.colliders[collider].geometry.vertices) {
 
                 // Creating a raycaster that goes from the entitie's current world position to the detector vertex's next position.
                 var vertex = this.colliders[collider].geometry.vertices[id];
@@ -298,10 +308,10 @@ Entity.prototype.handleCollisions = function() {
                 var collisions = this.buffer.raycaster.intersectObjects(this.scene.colliders);
 
                 // For each collision encountered on this ray.
-                for(var key in collisions) {
+                for (var key in collisions) {
 
                     // Skipping if intersecting itself.
-                    if(collisions[key].object.entity !== this) {
+                    if (collisions[key].object.entity !== this) {
 
                         // Getting the normal of the colliding face in the world context.
                         var collisionNormal = collisions[key].face.normal.clone().applyMatrix4(collisions[key].object.matrixWorld);

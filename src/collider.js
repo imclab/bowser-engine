@@ -1,4 +1,4 @@
-// Imports.
+// Library imports.
 var THREE = require('three');
 
 /**
@@ -51,19 +51,27 @@ Collider.prototype.add = function(object) {
     console.warn('Cannot add anything to collider ' + object.key + '. Skipping.');
 };
 
-Collider.prototype.init = function() {
-
-    // Registerin in the entity.
-    if(this.entity) {
-        this.entity.colliders[this.key] = this;
-    }
-
-    // Registering in the scene.
-    if(this.scene) {
-        if (this.emit) {
-            this.scene.colliders.push(this);
+/**
+ * Links the collider.
+ * @param  {[type]} parent [description]
+ * @return {[type]}        [description]
+ */
+Collider.prototype.setScene = function(scene) {
+    if(scene) {
+        if (scene.colliders.indexOf(this) < 0) {
+            scene.colliders.push(this);
         }
     }
+
+    this.scene = scene;
+};
+
+Collider.prototype.setEntity = function(entity) {
+    if(entity) {
+        entity.colliders[this.key] = this;
+    }
+
+    this.entity = entity;
 };
 
 /**

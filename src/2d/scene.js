@@ -1,5 +1,7 @@
-// Imports.
+// Library imports.
 var THREE = require('three');
+
+// Class imports.
 var Scene = require('../scene');
 var Entity2D = require('./entity');
 var RenderPass = require('../pass/render');
@@ -13,7 +15,14 @@ var Scene2D = function(parameters) {
 
     // Initializing parameters.
     parameters = parameters ? parameters : {};
-    this.camera = parameters.camera ? parameters.camera : new THREE.OrthographicCamera(0, 1, 1, 0, -50, 50);
+    this.camera = parameters.camera ? parameters.camera : new BOWSER.OrthographicCamera({
+        left: 0,
+        right: 1,
+        top: 1,
+        bottom: 0,
+        near: -50,
+        far: 50
+    });
 
     // Adding stuff to the scene.
     this.camera.updateProjectionMatrix();
@@ -33,7 +42,6 @@ var Scene2D = function(parameters) {
 };
 
 Scene2D.prototype = Object.create(Scene.prototype);
-
 /**
  * Sets the resolution of the scene.
  * @param {Number} width The width of the scene.
@@ -53,8 +61,8 @@ Scene2D.prototype.setResolution = function(width, height) {
     }
 
     for (key in this.children) {
-        if (this.children[key].onResize) {
-            this.children[key].onResize();
+        if (this.children[key].setResolution) {
+            this.children[key].setResolution();
         }
     }
 };

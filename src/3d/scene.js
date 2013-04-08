@@ -14,13 +14,18 @@ var Scene3D = function(parameters) {
 
 	// Initializing parameters.
 	parameters = parameters ? parameters : {};
-	this.camera = parameters.camera ? parameters.camera : new THREE.PerspectiveCamera();
+
+    if (parameters.camera instanceof THREE.Camera) {
+        this.camera = parameters.camera;
+    } else {
+       this.camera = new BOWSER.PerspectiveCamera();
+    }
 
 	// Adding lighting.
 	this.light = new THREE.SpotLight(0xffffff, 1.75);
 	this.light.position.set(120, 200, 120);
 	this.light.castShadow = true;
-	this.light.shadowDarkness = 0.5;
+	this.light.shadowDarkness = 0.75;
 	this.light.shadowMapWidth = 2048;
 	this.light.shadowMapHeight = 2048;
 	this.light.shadowCameraNear = 100;
@@ -40,36 +45,6 @@ var Scene3D = function(parameters) {
 
 	// Launching custom construction.
 	this.onConstruction();
-};
-
-/**
- * Returns an extented version of Entity using prototypal inheritance.
- * This should be used for any custom entity creation.
- * @param {Object} extension An object containing what will be added to the extended entity prototype.
- */
-Scene3D.extend = function(extensions) {
-    var that = this;
-    extensions = extensions instanceof Object ? extensions : {};
-
-    function Class () {
-        if (extensions.construct) {
-            extensions.construct.apply(this, arguments);
-        } else {
-            that.apply(this, arguments);
-        }
-    }
-
-    Class.prototype = Object.create(this.prototype);
-
-    for (var key in extensions) {
-        if (key !== 'construct') {
-            Class.prototype[key] = extensions[key];
-        }
-    }
-
-    Class.prototype.constructor = Class;
-    Class.extend = arguments.callee;
-    return Class;
 };
 
 Scene3D.prototype = Object.create(Scene.prototype);

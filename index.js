@@ -7,6 +7,7 @@ module.exports = {
 
     // Classes.
     Action: require('./src/action'),
+    Loader: require('./src/loader'),
     Collider: require('./src/collider'),
     PerspectiveCamera: require('./src/camera/perspective'),
     OrthographicCamera: require('./src/camera/orthographic'),

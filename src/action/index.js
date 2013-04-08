@@ -19,5 +19,12 @@ Action.prototype = Object.create(Base.prototype);
  */
 Action.prototype.update = function() {};
 
+Action.prototype.setEntity = function(entity) {
+    if (entity) {
+        entity.actions[this.key] = this;
+    }
+    this.entity = entity;
+};
+
 // Exports.
 module.exports = Action;
