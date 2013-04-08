@@ -81,7 +81,7 @@ var TileMap = function(parameters) {
     this.geometries = [];
     this.nonWalkableIds = [];
     this.animationInfo = {};
-    this.collisionLayers = [4];
+    this.collisionLayers = [];
     this.camera = parameters.camera ? parameters.camera : undefined;
     this.cameraLockAxis = parameters.cameraLockAxis ? parameters.cameraLockAxis : new THREE.Vector3(1, 1, 0);
     this.cameraUVtoAxis = parameters.cameraUVtoAxis ? parameters.cameraUVtoAxis : ['x', 'y'];
@@ -259,93 +259,99 @@ TileMap.prototype.objectFound = function(layerName, objectData) {
             this.camera.position.x = position.x;
             this.camera.position.y = position.y;
         }
-    } else if ('gid' in objectData) {
-        // found a image layer
-        if (objectData.type in this.typeClasses) {
-            var props = {
-                position: position
-            };
-            if ('animation' in objectData.properties) {
-                props['animation'] = objectData.properties.animation;
+    } else if (objectData.type in this.typeClasses) {
+        var props = {
+            key: objectData.name,
+            position: position,
+            objectData: objectData,
+            tileMap: this,
+            rect: {
+                'x': position.x,
+                'y': position.y,
+                'width': objectData.width,
+                'height': objectData.height
             }
-            if ('layerColliders' in objectData.properties) {
-                var names = objectData.properties.layerColliders.split(',');
-                var layerColliders = {};
-                for (var key in names) {
-                    var name = names[key];
-                    console.log('Found layer collider', name);
-                    if (name in objectData.properties) {
-                        var cords = objectData.properties[name].split(',');
-                        for (var i = cords.length - 1; i >= 0; i--) {
-                            cords[i] = parseInt(cords[i], 10);
-                        }
-                        var size = new THREE.Vector3(0, 0, 0);
-                        var pos = new THREE.Vector3(0, 0, 0);
-                        var geo;
-                        // Subdivide the collider so a vertex will always be in every tile position
-                        var subDivX, subDivY, subDivZ;
-                        switch (cords.length) {
-                            case 4:
-                                pos.x = cords[0];
-                                pos.y = cords[1];
-                                size.x = cords[2];
-                                size.y = cords[3];
-                                subDivX = Math.ceil(size.x / this.mapData.tilewidth);
-                                subDivY = Math.ceil(size.y / this.mapData.tileheight);
-                                break;
-                            case 2:
-                                size.x = cords[0];
-                                size.y = cords[1];
-                                subDivX = Math.ceil(size.x / this.mapData.tilewidth);
-                                subDivY = Math.ceil(size.y / this.mapData.tileheight);
-                                break;
-                            case 6:
-                                pos.x = cords[0];
-                                pos.y = cords[1];
-                                pos.z = cords[2];
-                                size.x = cords[3];
-                                size.y = cords[4];
-                                size.z = cords[5];
-                                subDivX = Math.ceil(size.x / this.mapData.tilewidth);
-                                subDivY = Math.ceil(size.y / this.mapData.tileheight);
-                                subDivZ = Math.ceil(size.z / this.mapData.tilewidth);
-                                break;
-                            case 3:
-                                size.x = cords[0];
-                                size.y = cords[1];
-                                size.z = cords[2];
-                                subDivX = Math.ceil(size.x / this.mapData.tilewidth);
-                                subDivY = Math.ceil(size.y / this.mapData.tileheight);
-                                subDivZ = Math.ceil(size.z / this.mapData.tilewidth);
-                                break;
-                        }
-                        switch (cords.length) {
-                            case 2:
-                            case 4:
-                                geo = new THREE.PlaneGeometry(size.x, size.y, subDivX, subDivY);
-                                break;
-                            case 3:
-                            case 6:
-                                geo = new THREE.CubeGeometry(size.x, size.y, size.z, subDivX, subDivY, subDivZ);
-                                break;
-                        }
-                        var mesh = new BOWSER.Collider({
-                            geometry: geo,
-                            emit: true,
-                            receive: false,
-                            key: name
-                        });
-                        mesh.position.set(pos.x + size.x / 2, pos.y + size.y / 2, pos.z);
-                        layerColliders[name] = mesh;
-                    }
-                }
-                if (layerColliders) {
-                    props['colliders'] = layerColliders;
-                }
-            }
-            var obj = new this.typeClasses[objectData.type](props);
-            this.scene.add(obj);
+        };
+        if ('animation' in objectData.properties) {
+            props['animation'] = objectData.properties.animation;
         }
+        if ('layerColliders' in objectData.properties) {
+            var names = objectData.properties.layerColliders.split(',');
+            var layerColliders = {};
+            for (var key in names) {
+                var name = names[key];
+                console.log('Found layer collider', name);
+                if (name in objectData.properties) {
+                    var cords = objectData.properties[name].split(',');
+                    for (var i = cords.length - 1; i >= 0; i--) {
+                        cords[i] = parseInt(cords[i], 10);
+                    }
+                    var size = new THREE.Vector3(0, 0, 0);
+                    var pos = new THREE.Vector3(0, 0, 0);
+                    var geo;
+                    // Subdivide the collider so a vertex will always be in every tile position
+                    var subDivX, subDivY, subDivZ;
+                    switch (cords.length) {
+                        case 4:
+                            pos.x = cords[0];
+                            pos.y = cords[1];
+                            size.x = cords[2];
+                            size.y = cords[3];
+                            subDivX = Math.ceil(size.x / this.mapData.tilewidth);
+                            subDivY = Math.ceil(size.y / this.mapData.tileheight);
+                            break;
+                        case 2:
+                            size.x = cords[0];
+                            size.y = cords[1];
+                            subDivX = Math.ceil(size.x / this.mapData.tilewidth);
+                            subDivY = Math.ceil(size.y / this.mapData.tileheight);
+                            break;
+                        case 6:
+                            pos.x = cords[0];
+                            pos.y = cords[1];
+                            pos.z = cords[2];
+                            size.x = cords[3];
+                            size.y = cords[4];
+                            size.z = cords[5];
+                            subDivX = Math.ceil(size.x / this.mapData.tilewidth);
+                            subDivY = Math.ceil(size.y / this.mapData.tileheight);
+                            subDivZ = Math.ceil(size.z / this.mapData.tilewidth);
+                            break;
+                        case 3:
+                            size.x = cords[0];
+                            size.y = cords[1];
+                            size.z = cords[2];
+                            subDivX = Math.ceil(size.x / this.mapData.tilewidth);
+                            subDivY = Math.ceil(size.y / this.mapData.tileheight);
+                            subDivZ = Math.ceil(size.z / this.mapData.tilewidth);
+                            break;
+                    }
+                    switch (cords.length) {
+                        case 2:
+                        case 4:
+                            geo = new THREE.PlaneGeometry(size.x, size.y, subDivX, subDivY);
+                            break;
+                        case 3:
+                        case 6:
+                            geo = new THREE.CubeGeometry(size.x, size.y, size.z, subDivX, subDivY, subDivZ);
+                            break;
+                    }
+                    var mesh = new BOWSER.Collider({
+                        geometry: geo,
+                        emit: true,
+                        receive: false,
+                        key: name
+                    });
+                    mesh.position.set(pos.x + size.x / 2, pos.y + size.y / 2, pos.z);
+                    layerColliders[name] = mesh;
+                }
+            }
+            if (layerColliders) {
+                props['colliders'] = layerColliders;
+            }
+        }
+        var obj = new this.typeClasses[objectData.type](props);
+        this.scene.add(obj);
     } else {
         // run the onObjectFound callback for every object found
         if (this.onObjectFound !== undefined) {
@@ -471,12 +477,17 @@ TileMap.prototype.setTileGid = function(gid, tileId, layerId) {
         }
         layer.data[tileId] = gid;
         this.geometries[layerId].geometry.uvsNeedUpdate = true;
+        // TODO: make this update walkable tiles.
     }
 };
 
 TileMap.prototype.tileForPosition = function(position) {
     var pos = this.tileIdForPosition(position);
-    return Math.floor(pos.y) * this.mapData.width + Math.floor(pos.x);
+    return this.tileIndexForTileCords( Math.floor(pos.x), Math.floor(pos.y));
+};
+
+TileMap.prototype.tileIndexForTileCords = function(x, y) {
+    return y * this.mapData.width + x;
 };
 
 TileMap.prototype.tileIdForPosition = function(position) {
