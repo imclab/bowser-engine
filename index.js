@@ -23,5 +23,6 @@ module.exports = {
     Scene3D: require('./src/3d/scene'),
     Sound: require('./src/sound'),
     Tile: require('./src/2d/tile'),
+    ShaderPass: require('./src/pass/shader'),
     TileMap: require('./src/tilemap')
 };
