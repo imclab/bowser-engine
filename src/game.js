@@ -75,7 +75,7 @@ var Game = function(parameters) {
 
 	// Setting up the renderer.
 	this.renderer.shadowMapEnabled = true;
-	this.renderer.shadowMapSoft = true;
+	this.renderer.shadowMapType = THREE.PCFSoftShadowMap;
 	this.renderer.autoClear = false;
 
 	// Adding watchers.
