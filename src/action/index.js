@@ -1,4 +1,4 @@
-// Imports.
+// Class imports.
 var Base = require('../base');
 
 /**
