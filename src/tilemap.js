@@ -1,6 +1,5 @@
 var THREE = require('three');
 var Entity = require('./entity');
-var Misc = require('./misc');
 
 /*
  * @constructor
@@ -81,7 +80,6 @@ var TileMap = function(parameters) {
     this.geometries = [];
     this.nonWalkableIds = [];
     this.animationInfo = {};
-    this.collisionLayers = [];
     this.camera = parameters.camera ? parameters.camera : undefined;
     this.cameraLockAxis = parameters.cameraLockAxis ? parameters.cameraLockAxis : new THREE.Vector3(1, 1, 0);
     this.cameraUVtoAxis = parameters.cameraUVtoAxis ? parameters.cameraUVtoAxis : ['x', 'y'];
@@ -93,7 +91,7 @@ var TileMap = function(parameters) {
         this.setMapData(parameters.mapData);
     } else if (this.url) {
         var that = this;
-        Misc.getJSON(this.url, function(json) {
+        this.loader.get(this.url, function(json) {
             that.setMapData(json);
         });
     }
@@ -116,11 +114,13 @@ TileMap.prototype.createGeometry = function() {
         var layer = this.mapData.layers[i];
         if (layer.type === "tilelayer") {
             // Create the plane geometry with a 1:1 pixel to unit rato
-            var geometry = new THREE.PlaneGeometry(this.offsetUnits.x * 2, this.offsetUnits.y * 2, layer.width, layer.height);
+            var geometry = new THREE.PlaneGeometry(this.offsetUnits.x * 2,
+            this.offsetUnits.y * 2, layer.width, layer.height);
             var materials = [];
             // Clone the materials so we can adjust the opacity on a layer by layer basis
             // https://github.com/mrdoob/three.js/issues/1507#issuecomment-4679121
-            // mrdoob: If you clone a material the compiled program gets shared. Meaning that only one program exist in memory and each material have unique uniform values.
+            // mrdoob: If you clone a material the compiled program gets shared. Meaning that only one program 
+            // exist in memory and each material have unique uniform values.
             for (var j = 0; j < this.materials.length; j++) {
                 materials.push(this.materials[j].clone());
             }
@@ -217,7 +217,8 @@ TileMap.prototype.loadImages = function() {
     for (var i = 0; i < this.mapData.tilesets.length; i++) {
         var url = this.mapData.tilesets[i].image;
         var name = this.mapData.tilesets[i].name;
-        var texture = THREE.ImageUtils.loadTexture(url.replace(this.imageUrlFind, this.imageUrlReplace), new THREE.UVMapping());
+        var texture = THREE.ImageUtils.loadTexture(url.replace(this.imageUrlFind,
+        this.imageUrlReplace), new THREE.UVMapping());
         texture.name = name;
         texture.magFilter = THREE.NearestFilter;
         texture.minFilter = THREE.NearestMipMapNearestFilter;
@@ -252,7 +253,8 @@ TileMap.prototype.materialIdForGid = function(gid) {
 
 TileMap.prototype.objectFound = function(layerName, objectData) {
     var objectHeight = objectData.height;
-    var position = new THREE.Vector3(objectData.x, objectData.y + objectData.height, this.geometries[this.layerId(layerName)].position.z);
+    var position = new THREE.Vector3(objectData.x, objectData.y + objectData.height,
+    this.geometries[this.layerId(layerName)].position.z);
     position = tile.mapToTile(position);
     if (objectData.type === "Camera") {
         if (this.camera) {
@@ -360,17 +362,6 @@ TileMap.prototype.objectFound = function(layerName, objectData) {
     }
 };
 
-TileMap.prototype.positionIsWalkable = function(position) {
-    var tileIndex = this.tileForPosition(position);
-    for (var index in this.collisionLayers) {
-        var layerId = this.collisionLayers[index];
-        if (this.nonWalkableIds.indexOf(this.mapData.layers[layerId].data[tileIndex]) != -1) {
-            return false;
-        }
-    }
-    return true;
-};
-
 /*
  * Given a layer name or layer id, set the opacity of the layer.
  * @param: {layerId} The name or index of the layer to change opacity.
@@ -398,12 +389,12 @@ TileMap.prototype.setMapData = function(mapData) {
     for (var geo in this.geometries) {
         this.remove(geometries[geo]);
     }
-    this.offsetUnits.set(this.mapData.tilewidth * this.mapData.width / 2, this.mapData.tileheight * this.mapData.height / 2);
+    this.offsetUnits.set(this.mapData.tilewidth * this.mapData.width / 2,
+    this.mapData.tileheight * this.mapData.height / 2);
     this.materials = [];
     this.geometries = [];
     this.loadImages();
     this.createGeometry();
-    this.updateMapUVs();
     // Process map properties
     if (Object.getOwnPropertyNames(this.mapData.properties).length !== 0) {
         if (this.onMapPropsFound !== undefined) {
@@ -450,6 +441,7 @@ TileMap.prototype.setMapData = function(mapData) {
             }
         }
     }
+    this.updateMapUVs();
     this.loaded = true;
     this.scene.showColliders(true);
 };
@@ -483,7 +475,7 @@ TileMap.prototype.setTileGid = function(gid, tileId, layerId) {
 
 TileMap.prototype.tileForPosition = function(position) {
     var pos = this.tileIdForPosition(position);
-    return this.tileIndexForTileCords( Math.floor(pos.x), Math.floor(pos.y));
+    return this.tileIndexForTileCords(Math.floor(pos.x), Math.floor(pos.y));
 };
 
 TileMap.prototype.tileIndexForTileCords = function(x, y) {
@@ -492,7 +484,6 @@ TileMap.prototype.tileIndexForTileCords = function(x, y) {
 
 TileMap.prototype.tileIdForPosition = function(position) {
     var ret = position.clone();
-    //console.log((ret.x + this.offsetUnits.x), this.mapData.height * this.mapData.tileheight - (ret.y + this.offsetUnits.y));
     ret.x = (ret.x + this.offsetUnits.x) / this.mapData.tilewidth;
     ret.y = this.mapData.height - (ret.y + this.offsetUnits.y) / this.mapData.tileheight;
     return ret;
@@ -537,15 +528,18 @@ TileMap.prototype.updateMapUVs = function() {
     for (var i = 0; i < this.geometries.length; i++) {
         var layer = this.mapData.layers[i];
         if (layer.type === 'tilelayer') {
-            var faces = this.geometries[i].geometry.faces;
-            var facesUVS = this.geometries[i].geometry.faceVertexUvs[0];
+            var geo = this.geometries[i];
+            var faces = geo.geometry.faces;
+            var facesUVS = geo.geometry.faceVertexUvs[0];
             var layerData = layer.data;
             for (var j = 0; j < facesUVS.length; j++) {
-                var faceUVs = this.uvsForGid(layerData[j]);
-                // Note: MaterialIndex is only used once, at first render when it breaks geometry into batches 
-                //       of triangles with the same material. If you need to update the guid for a tile you should
+                var gid = layerData[j];
+                var faceUVs = this.uvsForGid(gid);
+                // Note: MaterialIndex is only used once, at first render when it breaks 
+                //       geometry into batches of triangles with the same material. If you 
+                //       need to update the guid for a tile you should
                 //       make sure all required tiles are on the same texture set.
-                faces[j].materialIndex = (this.materialIdForGid(layerData[j]));
+                faces[j].materialIndex = (this.materialIdForGid(gid));
                 for (var k = 0; k < faceUVs.length; k++) {
                     facesUVS[j][k].set(faceUVs[k].x, faceUVs[k].y);
                 }
@@ -619,6 +613,11 @@ TileMap.prototype.walkableForEntity = function(entity) {
             pos.z += collider.position.z + vertex.z;
             var tileIndex = this.tileForPosition(pos);
             if (this.nonWalkableIds.indexOf(layerData[tileIndex]) != -1) {
+                return false;
+            }
+            // prevent walking offscreen
+            if (pos.x < -this.offsetUnits.x || pos.x > this.offsetUnits.x ||
+                pos.y < -this.offsetUnits.y || pos.y > this.offsetUnits.y) {
                 return false;
             }
         }
