@@ -3,9 +3,7 @@ var THREE = require('three');
 var WATCHJS = require('watchjs');
 
 // Class imports.
-var Action = require('./action');
 var Loader = require('./loader');
-var Scene3D = require('./3d/scene');
 
 /**
  * The entity object represent the idea of an idependant self-mangage object. For instance a character or a vehicle.
@@ -91,7 +89,7 @@ var Entity = function(parameters) {
     this.sounds = {};
     this.entities = {};
     this.colliders = {};
-    this.actions = {};
+    this.components = {};
 
     // Setting physics properties.
     this.cof = 0;
@@ -214,9 +212,9 @@ Entity.prototype.add = function(object) {
 Entity.prototype.update = function() {
     var key;
 
-    // Updating actions.
-    for (key in this.actions) {
-        this.actions[key].update();
+    // Updating components.
+    for (key in this.components) {
+        this.components[key].update();
     }
 
     // Storing position before any change happens.

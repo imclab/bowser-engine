@@ -1,11 +1,11 @@
 // Imports.
-var Action = require('../action');
+var Component = require('../component');
 
 /**
- * An action that allows your entity to jump.
+ * A component that allows your entity to jump.
  */
-var JumpAction = function(parameters) {
-    Action.call(this);
+var JumpComponent = function(parameters) {
+    Component.call(this);
 
     // Setting properties.
     this.phase = 'grounded';
@@ -19,14 +19,14 @@ var JumpAction = function(parameters) {
     this.cutoff = parameters.cutoff ? parameters.cutoff : 15;
 };
 
-JumpAction.prototype = Object.create(Action.prototype);
+JumpComponent.prototype = Object.create(Component.prototype);
 
 /**
  * The update method.
  * @returns {undefined} [description]
  */
-JumpAction.prototype.update = function() {
-    Action.prototype.update.call(this);
+JumpComponent.prototype.update = function() {
+    Component.prototype.update.call(this);
 
     var trigger = this.entity.scene.game.keyboard.getKey(this.trigger);
 
@@ -70,4 +70,4 @@ JumpAction.prototype.update = function() {
 
 
 // Exports.
-module.exports = JumpAction;
+module.exports = JumpComponent;

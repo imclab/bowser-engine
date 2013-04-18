@@ -6,7 +6,7 @@ module.exports = {
     PATHFINDING: require('pathfinding'),
 
     // Classes.
-    Action: require('./src/action'),
+    Component: require('./src/component'),
     Loader: require('./src/loader'),
     Collider: require('./src/collider'),
     PerspectiveCamera: require('./src/camera/perspective'),
@@ -16,7 +16,7 @@ module.exports = {
     Entity3D: require('./src/3d/entity'),
     Game: require('./src/game'),
     Grid: require('./src/grid'),
-    JumpAction: require('./src/action/jump'),
+    JumpComponent: require('./src/component/jump'),
     Misc: require('./src/misc'),
     Resolution: require('./src/resolution'),
     Scene2D: require('./src/2d/scene'),

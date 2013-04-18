@@ -4,27 +4,27 @@ var Base = require('../base');
 /**
  * An action that allows your entity to jump.
  */
-var Action = function() {
+var Component = function() {
     Base.call(this);
 
     // Setting properties.
     this.entity = undefined;
 };
 
-Action.prototype = Object.create(Base.prototype);
+Component.prototype = Object.create(Base.prototype);
 
 /**
  * The update method.
  * @returns {undefined} [description]
  */
-Action.prototype.update = function() {};
+Component.prototype.update = function() {};
 
-Action.prototype.setEntity = function(entity) {
+Component.prototype.setEntity = function(entity) {
     if (entity) {
-        entity.actions[this.key] = this;
+        entity.components[this.key] = this;
     }
     this.entity = entity;
 };
 
 // Exports.
-module.exports = Action;
+module.exports = Component;
