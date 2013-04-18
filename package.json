@@ -10,7 +10,8 @@
     },
     "devDependencies": {},
     "scripts": {
-        "document": "rm -rf docs & doxx --source src --target docs"
+        "document": "rm -rf docs & doxx --source src --target docs",
+        "build": "if [ ! -d \"build\" ]; then mkdir build; fi && browserify index.js > build/bowser.js"
     },
     "repository": {
         "type": "git",
