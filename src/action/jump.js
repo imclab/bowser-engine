@@ -52,7 +52,7 @@ JumpAction.prototype.update = function() {
     // During the impulsion.
     if(this.phase === 'start' || this.phase === 'impulsion') {
         if(trigger.pressed && this.retain && trigger.hold < this.cutoff) {
-            this.entity.velocity.y = this.potential;
+            this.entity.velocity.y = this.potential / this.entity.mass;
         } else {
             this.phase = 'ascension';
         }

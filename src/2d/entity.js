@@ -19,8 +19,7 @@ var Entity2D = function(parameters) {
     // Setting that.
     var that = this;
 
-    // Creating the previous object.
-    this.previous = {};
+    // Augmenting the previous object.
     this.previous.animation = '';
 
     // Creating sprite object.

@@ -39,6 +39,9 @@ var Entity = function(parameters) {
         that.buffer.updateStatic = true;
     };
 
+    // Creating previous object.
+    this.previous = {};
+
     // Adding watchers.
     WATCHJS.watch(that, 'dynamic', function() {
         that.matrixAutoUpdate = that.dynamic;
@@ -78,18 +81,25 @@ var Entity = function(parameters) {
         this.position.set(parameters.position.x, parameters.position.y, parameters.position.z);
     }
 
+    // Setting properties.
     this.key = parameters.key ? parameters.key : this.id;
     this.visible = parameters.visible ? parameters.visible : true;
-    this.sounds = {};
-    this.delta = 0;
-    this.entities = {};
     this.entity = undefined;
+    this.delta = 0;
+
+    // Setting indicies properties.
+    this.sounds = {};
+    this.entities = {};
     this.colliders = {};
     this.actions = {};
-    this.collisions = [];
-    this.recursion = 0;
+
+    // Setting physics properties.
     this.cof = 0;
+    this.recursion = 0;
+    this.collisions = [];
+    this.force = new THREE.Vector3();
     this.acceleration = new THREE.Vector3();
+    this.mass = parameters.mass ? parameters.mass : 1;
     this.displacement = new THREE.Vector3();
     this.elasticity = parameters.elasticity ? parameters.elasticity : 0.0;
     this.friction = new THREE.Vector3();
@@ -218,6 +228,11 @@ Entity.prototype.update = function() {
 
     if (this.dynamic) {
 
+        // Computing acceleration.
+        this.acceleration.x += this.force.x / this.mass;
+        this.acceleration.y += this.force.y / this.mass;
+        this.acceleration.z += this.force.z / this.mass;
+
         // Applying gravity and acceleration.
         this.velocity.add(this.scene.gravity);
         this.velocity.add(this.acceleration.multiplyScalar(this.cof));
@@ -275,11 +290,17 @@ Entity.prototype.update = function() {
             this.children[key].update();
         }
     }
+};
 
-    // Resetting stuff for next round.
-    this.displacement.set(0, 0, 0);
-    this.acceleration.set(0, 0, 0);
-
+/**
+ * Reset values.
+ */
+Entity.prototype.reset = function() {
+    if (this.dynamic) {
+        this.displacement.set(0, 0, 0);
+        this.acceleration.set(0, 0, 0);
+        this.force.set(0,0,0);
+    }
 };
 
 /**

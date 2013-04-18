@@ -86,6 +86,9 @@ Scene.prototype.update = function() {
 
     // Updates all children with an update method.
     for (var key in this.children) {
+        if (this.children[key].reset instanceof Function) {
+            this.children[key].reset();
+        }
         if (this.children[key].update instanceof Function) {
             this.children[key].update();
         }
