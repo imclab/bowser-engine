@@ -1,14 +1,13 @@
 {
     "name": "bowser-engine",
     "version": "0.0.1",
-    "description": "A WebGL game engine based on three.js",
+    "description": "A WebGL game engine based on three.js.",
     "main": "index.js",
     "dependencies": {
         "pathfinding": "0.4.1",
         "watchjs": "0.0.0",
         "three": "0.56.0"
     },
-    "devDependencies": {},
     "scripts": {
         "document": "rm -rf docs & doxx --source src --target docs",
         "build": "if [ ! -d \"build\" ]; then mkdir build; fi && browserify index.js > build/bowser.js"
