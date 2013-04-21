@@ -52,5 +52,5 @@ A bowser.js file will be available in the build folder.
 
 ### Developing
 
-Bowser-engine had an auto-generated [documentation](http://www.bowserjs.org/docs/bowser-engine) and the bowser.js [website](http://bowserjs.org) has [examples](learn.bowserjs.org) to get you started. So for the sake of centralizing information please refere to these pages if you want to know how to use the API.
+Bowser-engine had an auto-generated [documentation](http://www.bowserjs.org/docs/bowser-engine) and the bowser.js [website](http://bowserjs.org) has [examples](learn.bowserjs.org) to get you started. For the sake of centralizing information please refere to these pages to start learning about the API. Now, wait no longer. Pronounce the magic words `require('bowser-engine')` to enter a world of high adventure.
 
