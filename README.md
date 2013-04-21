@@ -17,7 +17,7 @@ Sometime naive approaches can be creative, but if we are doing weird things, it'
 
 Bowser-engine is a client-side library therefore the easiest way to use it is to add the following line of code to your HTML page.
 
-`<script type="text/javascript" src="http://release.bowserjs.org/bowser-engine.js"></script>`
+`<script type="text/javascript" src="http://www.bowserjs.org/release/bowser-engine.js"></script>`
 
 That being said, the Web has evolved and nowadays websites are moving from being a set of static and dynamic pages served by a master server to self-sufficient sub-servers that can be deployed anywhere. Each of them are responsible for their own language and conventions and provide an standardized access through an IP address and a port. This is why **bowser-engine** is actually a node package before being Javascript library.
 
@@ -46,5 +46,5 @@ A bowser.js file will be available in the build folder.
 
 ### Developing
 
-Bowser-engine had an auto-generated [documentation](http://docs.bowserjs.org/bowser-engine) and the bowser.js [website](http://bowserjs.org) has [examples](learn.bowserjs.org) to get you started. So for the sake of centralizing information please refere to these pages if you want to know how to use the API.
+Bowser-engine had an auto-generated [documentation](http://www.bowserjs.org/docs/bowser-engine) and the bowser.js [website](http://bowserjs.org) has [examples](learn.bowserjs.org) to get you started. So for the sake of centralizing information please refere to these pages if you want to know how to use the API.
 
