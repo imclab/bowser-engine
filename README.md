@@ -19,12 +19,6 @@ Bowser-engine is a client-side library therefore the easiest way to use it is to
 
 `<script type="text/javascript" src="http://www.bowserjs.org/release/bowser.js"></script>`
 
-You can now use the bowser-engine API in your page using node style require function.
-
-```
-require('bowser-engine');
-```
-
 That being said, the Web has evolved and nowadays websites are moving from being a set of static and dynamic pages served by a master server to self-sufficient sub-servers that can be deployed anywhere. Each of them are responsible for their own language and conventions and provide an standardized access through an IP address and a port. This is why **bowser-engine** is actually a node package before being Javascript library.
 
 We all know that in order to run client-side, whatever code you have written needs to endup into a single file requested by your page. That being said, this single file made out of thousands of lines of code and refering to global variable that are not even declared in the file itself does not reflect the way you want to be developing. You want to be able to organize your code into separate files that refere to each other and this what node brings to the table. 
@@ -36,19 +30,14 @@ Getting node can be achieved using your [favorite](http://www.macports.org/) pac
 ```
 npm install bowser-engine
 ```
-This will download and install the latest version of bowser-engine inside a node_modules folder from your current terminal working directory. I personally recommand browserifying server-side on request but if you really want that single client-side JavaScript file, install browserify globally.
 
-```
-npm install -g browserify
-```
-
-Once donce, issue the following command in the terminal from the bowser-engine folder.
+This will download and install the latest version of bowser-engine inside a node_modules folder from your current terminal working directory. **We personally recommand browserifying server-side on request** but if you really want that single client-side JavaScript file, issue the following command in the terminal from the bowser-engine folder.
 
 ```
 npm run-script build
 ``` 
 
-A bowser.js file will be available in the build folder.
+A bowser-engine.js file will be available in the build folder.
 
 ### Developing
 
