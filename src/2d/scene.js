@@ -5,6 +5,7 @@ var THREE = require('three');
 var Scene = require('../scene');
 var Entity2D = require('./entity');
 var RenderPass = require('../pass/render');
+var OrthographicCamera = require('../camera/orthographic');
 
 /**
  * Initializes the scene.
@@ -15,7 +16,7 @@ var Scene2D = function(parameters) {
 
     // Initializing parameters.
     parameters = parameters ? parameters : {};
-    this.camera = parameters.camera ? parameters.camera : new BOWSER.OrthographicCamera({
+    this.camera = parameters.camera ? parameters.camera : new OrthographicCamera({
         left: 0,
         right: 1,
         top: 1,
