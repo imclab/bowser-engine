@@ -1,6 +1,6 @@
 {
   "name": "bowser-engine",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "A WebGL game engine based on three.js.",
   "main": "index.js",
   "dependencies": {
@@ -8,7 +8,8 @@
     "watchjs": "0.0.0",
     "three": "0.56.0",
     "browserify": "2.8.1",
-    "doxx": "0.5.9"
+    "doxx": "0.5.9",
+    "hexa-random": "0.0.1"
   },
   "scripts": {
     "document": "rm -rf docs & doxx --source src --target docs",
