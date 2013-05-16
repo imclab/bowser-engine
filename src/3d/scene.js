@@ -1,7 +1,10 @@
-// Imports.
+// Library Imports.
 var THREE = require('three');
 var Scene = require('../scene');
+
+// Class imports.
 var RenderPass = require('../pass/render');
+var PerspectiveCamera = require('../camera/perspective');
 
 /**
  * Initializes the scene object.
@@ -18,7 +21,7 @@ var Scene3D = function(parameters) {
     if (parameters.camera instanceof THREE.Camera) {
         this.camera = parameters.camera;
     } else {
-       this.camera = new BOWSER.PerspectiveCamera();
+       this.camera = new PerspectiveCamera();
     }
 
 	// Adding lighting.

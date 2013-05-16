@@ -25,7 +25,7 @@ var Entity = function(parameters) {
     this.parameters = parameters ? parameters : {};
 
     // Creating loader.
-    this.loader = new BOWSER.Loader();
+    this.loader = new Loader();
 
     // Creating buffer object.
     this.buffer = {};
