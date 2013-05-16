@@ -6,11 +6,9 @@ Bowser-engine is a game engine based on an exciting open source technology calle
 
 Bowser-engine is a node package currently meant to be browserified and served client side. It's a collection of objects using prototypal inheritance. To have a good overview of the API please refere to this [article](http://bowserjs.org/learn/bowser-engine-api).
 
-We are very kean to have people collaborating, whether it is by pointing at issues, sharing ideas, issuing pull requests or ultimatly becoming official members.
+### Collaborate
 
-### Comply
-
-Good collaboration does not go well without clear guidelines and organisation. This is why we will take advantage of this readme file to outline some of that stuff.
+We are very kean to have people contributing to the project, whether it is by pointing at issues, sharing ideas, issuing pull requests or ultimatly becoming official members. That being said, good collaboration does not go well without clear guidelines and organisation. This is why we will take advantage of this readme to outline some of that stuff.
 
 * Indentation is made out of four spaces.
 * Code is formated matching [JSLint](http://www.jslint.com/) standards.
