@@ -6,7 +6,7 @@
   "dependencies": {
     "pathfinding": "0.4.1",
     "watchjs": "0.0.0",
-    "three": "0.56.0",
+    "three": "0.58.1",
     "browserify": "2.8.1",
     "doxx": "0.5.9",
     "hexa-random": "0.0.1"

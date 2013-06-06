@@ -16,6 +16,7 @@ var Monitor = function(game) {
 	this.div.style.width = '280px';
 	this.div.style.fontWeight = 'bold';
 	this.div.style.position = 'absolute';
+	this.div.style.textAlign = 'left';
 	this.div.style.top = '0px';
 	this.div.style.left = '0px';
 	this.div.style.margin = '15px';

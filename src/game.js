@@ -88,7 +88,7 @@ var Game = function(parameters) {
 	});
 
 	WATCHJS.watch(that, 'clearColor', function() {
-		that.renderer.setClearColorHex(that.clearColor, 1);
+		that.renderer.setClearColor(that.clearColor, 1);
 	});
 
 	// Initializing parameters.
